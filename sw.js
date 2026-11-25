@@ -1,5 +1,5 @@
 const PREFIX="Reactor-";
-const CACHE="Reactor-v1795600478270";
+const CACHE="Reactor-v1795600760576";
 const ASSETS=['./','./index.html','./manifest.json','./icon.png','./icon-192.png'];
 self.addEventListener('install',e=>{
 self.skipWaiting();
