@@ -564,6 +564,36 @@ body.dark { --t-bleu: #8fb3d9; --t-vert: #93c4a4; --t-ambre: #d4ba87; --t-rouge:
     border-color: color-mix(in srgb, var(--t-vert) 55%, transparent);
 }
 .card .token-paste-btn svg { stroke: currentColor; }
+/* Découpeur : cinquième case de la barre principale */
+.card .ai-bar.main-bar { grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.card #slicerBtn {
+    color: var(--t-bleu); -webkit-touch-callout: none;
+    background: color-mix(in srgb, var(--t-bleu) 11%, var(--btn-bg));
+    border-color: color-mix(in srgb, var(--t-bleu) 32%, transparent);
+}
+#slicerDialog { margin: auto; width: min(92vw, 360px); max-height: 84vh; overflow: auto; padding: 1rem; border-radius: 1rem; border: 1px solid var(--border-dark); background: var(--card); color: var(--text); }
+#slicerDialog::backdrop { background: var(--modal-backdrop); }
+#slicerDialog h2 { margin: 0 0 0.4rem; font-size: 1rem; }
+#slicerDialog p { margin: 0 0 0.8rem; font-size: 0.8rem; color: var(--text-light); }
+#slicerDialog button, #slicerDialog input { min-height: 48px; border-radius: 14px; border: 1px solid var(--border-dark); background: var(--btn-bg); color: var(--btn-text); font-family: inherit; font-weight: 600; }
+#slicerDialog button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.slicer-count { display: grid; grid-template-columns: 56px 1fr 56px; gap: 8px; margin: 0.4rem 0 0.8rem; }
+.slicer-count button { font-size: 1.4rem; }
+#slicerDialog input { width: 100%; box-sizing: border-box; text-align: center; font-size: 1.2rem; }
+#slicerRun, #slicerClose { width: 100%; }
+#slicerDialog #slicerRun { background: var(--accent); border-color: var(--accent); color: white; }
+#slicerList { display: flex; flex-direction: column; gap: 8px; margin: 0.8rem 0; }
+#slicerDialog .slice-row { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; width: 100%; padding: 0.6rem 0.8rem; text-align: left; }
+.slice-row small { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 400; color: var(--text-light); }
+#slicerDialog .slice-row.done { border-color: var(--ok); background: rgba(16,185,129,0.14); }
+
+/* Balle : grise à vide, laiton et cuivre quand le code est chargé */
+.card button svg.bullet { width: 22px; height: 36px; }
+.bullet .bullet-tip, .bullet .bullet-case { fill: none; stroke: var(--text-light); stroke-width: 1.5; }
+.bullet .bullet-shine { display: none; }
+.is-loaded .bullet .bullet-tip { fill: url(#bulletCopper); stroke: #5c240c; stroke-width: 0.8; }
+.is-loaded .bullet .bullet-case { fill: url(#bulletBrass); stroke: #5e430c; stroke-width: 0.8; }
+.is-loaded .bullet .bullet-shine { display: inline; fill: none; stroke: rgba(255,255,255,0.65); stroke-width: 0.9; }
     </style>
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#4b6cb7">
@@ -595,7 +625,23 @@ body.dark { --t-bleu: #8fb3d9; --t-vert: #93c4a4; --t-ambre: #d4ba87; --t-rouge:
         <svg viewBox="0 0 24 24"><path d="M12 3l2.5 6 6.5.5-5 4.5 1.5 6.5-5.5-3.5-5.5 3.5L8 14 3 9.5l6.5-.5z"></path></svg>
     </button>
     <button id="firstCodeBtn" class="square-btn" title="Installer le premier code" aria-label="Installer le premier code">
-        <svg viewBox="0 0 24 24"><path d="M14 3H6v18h12V7zM12 11v6M9 14h6"></path></svg>
+        <svg class="bullet" viewBox="0 0 24 40" aria-hidden="true">
+            <defs>
+                <linearGradient id="bulletBrass" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0" stop-color="#7a5a14"></stop><stop offset="0.3" stop-color="#fbe7a1"></stop>
+                    <stop offset="0.65" stop-color="#cfa23c"></stop><stop offset="1" stop-color="#6e4f10"></stop>
+                </linearGradient>
+                <linearGradient id="bulletCopper" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0" stop-color="#7d3415"></stop><stop offset="0.32" stop-color="#ffc29a"></stop>
+                    <stop offset="0.66" stop-color="#c4672f"></stop><stop offset="1" stop-color="#6a2a0e"></stop>
+                </linearGradient>
+            </defs>
+            <path class="bullet-tip" d="M12 1.5C15.6 4 17.2 8.4 17.2 14H6.8C6.8 8.4 8.4 4 12 1.5Z"></path>
+            <path class="bullet-case" d="M6.8 14H17.2V32.5H6.8Z"></path>
+            <path class="bullet-case" d="M8.2 32.5H15.8V35H8.2Z"></path>
+            <path class="bullet-case" d="M6.2 35H17.8V38.5H6.2Z"></path>
+            <path class="bullet-shine" d="M9.6 16.5V30.5M11 5.8C10 7.5 9.4 9.6 9.3 12"></path>
+        </svg>
     </button>
     <button id="projectToggle" class="dot-button" aria-expanded="false" aria-controls="projectTools">
         <span id="projectName" class="btn-label">Projet</span> <span id="projectArrow">▾</span>
@@ -2536,6 +2582,108 @@ async function sendCurrentCode() {
     if (!source.trim()) return showError("Code vide.");
     await copyTextToClipboard(buildStartContext(source), "✅ Protocole et code copiés : colle-les à l'IA.");
 }
+// Un bloc de premier niveau (avec ses commentaires) n'est jamais coupé
+function splitCodeUnits(source) {
+    const blocks = parseReactBlocks(source).blocks;
+    return blocks.map((block, i) => {
+        const start = i ? blocks[i - 1].end : 0;
+        const end = i === blocks.length - 1 ? source.length : block.end;
+        const code = source.slice(start, end).replace(/^\s*\n/, '').trimEnd();
+        return { name: block.name || 'instruction', code, lines: code.split('\n').length };
+    });
+}
+// Groupes consécutifs de tailles les plus proches possible ; « extra » = poids du protocole en tête
+function balanceUnits(units, count, extra) {
+    const sums = [0];
+    units.forEach(unit => sums.push(sums[sums.length - 1] + unit.lines + 1));
+    const target = (sums[units.length] + extra) / count;
+    const cost = (from, to) => (sums[to] - sums[from] + (from ? 0 : extra) - target) ** 2;
+
+    let best = sums.map((sum, to) => to ? cost(0, to) : Infinity);
+    const cuts = [];
+    for (let k = 1; k < count; k++) {
+        const next = sums.map(() => Infinity);
+        const cut = [];
+        for (let to = k + 1; to <= units.length; to++) {
+            for (let from = k; from < to; from++) {
+                const value = best[from] + cost(from, to);
+                if (value < next[to]) {
+                    next[to] = value;
+                    cut[to] = from;
+                }
+            }
+        }
+        best = next;
+        cuts.push(cut);
+    }
+
+    const groups = [];
+    let end = units.length;
+    for (let k = count - 2; k >= 0; k--) {
+        groups.unshift(units.slice(cuts[k][end], end));
+        end = cuts[k][end];
+    }
+    groups.unshift(units.slice(0, end));
+    return groups;
+}
+function buildSlices(source, count) {
+    const protocol = REACT_PROMPT.split('\n').slice(0, -1).join('\n').trim();
+    const groups = balanceUnits(splitCodeUnits(source), count, protocol.split('\n').length);
+    const total = groups.length;
+
+    return groups.map((group, i) => {
+        const code = `${CODE_FENCE}tsx\n${group.map(unit => unit.code).join('\n\n')}\n${CODE_FENCE}`;
+        const head = i === 0
+            ? `${protocol}\n\nL'application existe déjà. Son code est long : je te l'envoie en ${total} tranches, dans ${total} messages séparés. Voici la tranche 1/${total} :`
+            : `⚙️ PROTOCOLE LB REACTOR : tranche ${i + 1}/${total} de mon code, à la suite des précédentes :`;
+        const tail = i === total - 1
+            ? `C'était la dernière tranche (${total}/${total}). Les ${total} tranches mises bout à bout, dans l'ordre, forment tout mon code. Réponds simplement « Prêt », puis attends ma demande.`
+            : `Il reste ${total - i - 1} tranche(s). Ne code rien et n'analyse rien : réponds seulement « Reçu ${i + 1}/${total} ».`;
+        const text = `${head}\n\n${code}\n\n${tail}`;
+        return { text, lines: text.split('\n').length, names: group.map(unit => unit.name) };
+    });
+}
+function showSlices(slices) {
+    const list = document.getElementById('slicerList');
+    list.textContent = '';
+    slices.forEach((slice, i) => {
+        const row = document.createElement('button');
+        row.className = 'slice-row';
+        const title = document.createElement('strong');
+        title.textContent = `Tranche ${i + 1}/${slices.length} · ${slice.lines} lignes${i ? '' : ' (avec protocole)'}`;
+        const names = document.createElement('small');
+        names.textContent = slice.names.join(', ');
+        row.append(title, names);
+        row.addEventListener('click', async () => {
+            await copyTextToClipboard(slice.text, `✅ Tranche ${i + 1}/${slices.length} copiée.`);
+            row.classList.add('done');
+            title.textContent = `✓ Tranche ${i + 1}/${slices.length} copiée · ${slice.lines} lignes`;
+        });
+        list.append(row);
+    });
+}
+async function openSlicer() {
+    const source = domElements.reactCode.value.replace(/\r\n/g, '\n').trim();
+    if (!source) return showError("Code vide.");
+    let units;
+    try {
+        await ensureBabel();
+        units = splitCodeUnits(source);
+    } catch (err) {
+        return showError(`Échec : ${err.message}`);
+    }
+    if (units.length < 2) return showError("Un seul bloc : impossible de découper sans le casser. Touche simplement le découpeur.");
+
+    const total = source.split('\n').length;
+    const biggest = units.reduce((a, b) => b.lines > a.lines ? b : a);
+    const input = document.getElementById('slicerCount');
+    input.max = Math.min(units.length, 20);
+    input.value = Math.min(Number(input.max), Math.max(2, Math.ceil(total / 250)));
+    document.getElementById('slicerInfo').textContent =
+        `${total} lignes, ${units.length} blocs. Le plus gros : ${biggest.name} (${biggest.lines} lignes).`;
+    document.getElementById('slicerList').textContent = '';
+    document.getElementById('slicerDialog').showModal();
+}
 async function installFirstCode() {
     const field = document.getElementById('aiResponse');
     const report = document.getElementById('blocksReport');
@@ -2830,6 +2978,71 @@ document.querySelector('.code-area').after(
 })();
 setButtonContent(document.getElementById('pickBtn'), 'pick', "Désigner");
 setButtonContent(document.getElementById('deployBtn'), 'deploy', "Deploy");
+// Découpeur : toucher = protocole + code ; appui long = tranches
+(function initSlicer() {
+    const button = document.createElement('button');
+    button.id = 'slicerBtn';
+    button.className = 'square-btn ai-btn';
+    button.title = "Découpeur : toucher pour tout copier, appui long pour découper";
+    button.setAttribute('aria-label', button.title);
+    button.innerHTML = '<svg viewBox="0 0 24 24"><path d="M6 4a3 3 0 1 0 0 6a3 3 0 1 0 0-6M6 14a3 3 0 1 0 0 6a3 3 0 1 0 0-6M8.5 8.5L20 18M8.5 15.5L20 6"></path></svg>';
+    document.getElementById('undoBlocksBtn').before(button);
+
+    const dialog = document.createElement('dialog');
+    dialog.id = 'slicerDialog';
+    dialog.innerHTML = `
+        <h2>✂️ Découper le code</h2>
+        <p id="slicerInfo"></p>
+        <label for="slicerCount">Combien de découpes ?</label>
+        <div class="slicer-count">
+            <button type="button" data-step="-1" aria-label="Une découpe de moins">−</button>
+            <input id="slicerCount" type="number" inputmode="numeric" min="2">
+            <button type="button" data-step="1" aria-label="Une découpe de plus">+</button>
+        </div>
+        <button type="button" id="slicerRun">Découper</button>
+        <div id="slicerList"></div>
+        <button type="button" id="slicerClose">Fermer</button>`;
+    document.body.append(dialog);
+
+    const input = dialog.querySelector('#slicerCount');
+    const clamp = value => Math.min(Number(input.max), Math.max(2, Math.round(value) || 2));
+    dialog.querySelectorAll('[data-step]').forEach(stepButton => stepButton.addEventListener('click', () => {
+        input.value = clamp(Number(input.value) + Number(stepButton.dataset.step));
+        dialog.querySelector('#slicerList').textContent = '';
+    }));
+    input.addEventListener('input', () => { dialog.querySelector('#slicerList').textContent = ''; });
+    dialog.querySelector('#slicerRun').addEventListener('click', () => {
+        input.value = clamp(Number(input.value));
+        showSlices(buildSlices(domElements.reactCode.value.replace(/\r\n/g, '\n').trim(), Number(input.value)));
+    });
+    dialog.querySelector('#slicerClose').addEventListener('click', () => dialog.close());
+
+    let timer = 0;
+    let longPressed = false;
+    const cancel = () => clearTimeout(timer);
+    button.addEventListener('pointerdown', () => {
+        longPressed = false;
+        timer = setTimeout(() => {
+            longPressed = true;
+            if (navigator.vibrate) navigator.vibrate(30);
+            openSlicer();
+        }, 550);
+    });
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach(type => button.addEventListener(type, cancel));
+    button.addEventListener('contextmenu', event => event.preventDefault());
+    button.addEventListener('click', () => {
+        if (!longPressed) sendCurrentCode();
+        longPressed = false;
+    });
+})();
+// La balle de « 1er code » se colore dès qu'un code est chargé
+(function initBullet() {
+    const button = document.getElementById('firstCodeBtn');
+    const update = () => button.classList.toggle('is-loaded', domElements.reactCode.value.trim() !== '');
+    update();
+    // Le code change aussi par script (annulation, projet) : vérification régulière
+    setInterval(update, 400);
+})();
 // Données du projet ouvert ; les autres projets sont rangés dans « lb-project:id »
 const PROJECT_KEYS = ['lb-reaactor-code', 'lb-reactor-previous', 'lb-reactor-redo', 'lb-preview-storage', 'lb-history'];
 const HISTORY_LIMIT = 20;
@@ -3594,6 +3807,7 @@ const HELP_ITEMS = [
     "Code",
     ['#fontDownBtn', "Réduit la police du code"],
     ['#fontUpBtn', "Agrandit la police du code"],
+    ['#slicerBtn', "Toucher : copie protocole et code. Appui long : découpe en tranches"],
     ['#undoBlocksBtn', "Annule le dernier changement"],
     ['#pasteApplyBtn', "Colle et applique la réponse de l'IA"],
     ['#redoBlocksBtn', "Reprend le changement annulé"],
