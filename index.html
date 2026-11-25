@@ -1,0 +1,3614 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Reactor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease; }
+        
+        :root {
+            --bg: #e0e5ec;
+            --card: #e0e5ec;
+            --text: #2d3748;
+            --text-light: #718096;
+            --accent: #3182ce;
+            --btn-bg: #e0e5ec;
+            --btn-text: #2d3748;
+            --code-bg: #f0f4f8;
+            --border-light: rgba(255,255,255,0.7);
+            --border-dark: rgba(163,177,198,0.5);
+            --modal-bg: rgba(224, 229, 236, 0.85);
+            --modal-backdrop: rgba(0,0,0,0.4);
+            --border-solid: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        body.dark {
+            --bg: #13161c;
+            --card: #161921;
+            --text: #e2e8f0;
+            --text-light: #94a3b8;
+            --accent: #0ea5e9;
+            --btn-bg: #1a1e27;
+            --btn-text: #f8fafc;
+            --code-bg: #0b0d12;
+            --border-light: rgba(255,255,255,0.04);
+            --border-dark: rgba(0,0,0,0.8);
+            --modal-bg: rgba(22, 25, 33, 0.85);
+            --modal-backdrop: rgba(0,0,0,0.8);
+            --border-solid: 1px solid rgba(255,255,255,0.02);
+        }
+
+        body { 
+            background: var(--bg); 
+            font-family: 'Inter', system-ui, sans-serif; 
+            padding: 0.75rem; 
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        .card {
+            max-width: 1100px; 
+            margin: auto; 
+            background: var(--card); 
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            border: 1px solid var(--border-dark);
+            display: flex; 
+            flex-direction: column; 
+            gap: 1.25rem;
+        }
+
+        h1 { display: flex; justify-content: space-between; align-items: center; font-size: 1.4rem; font-weight: 700; margin: 0; }
+        
+        .dark-toggle { 
+            background: var(--btn-bg); 
+            padding: 0.4rem 1rem; 
+            border-radius: 0.75rem; 
+            cursor: pointer; 
+            font-weight: 600; 
+            font-size: 0.85rem; 
+            color: var(--btn-text); 
+            border: 1px solid var(--border-dark);
+        }
+        .dark-toggle:active { border-color: var(--border-light); }
+#helpBtn { margin-left: auto; margin-right: 0.4rem; }
+#helpDialog { margin: auto; width: min(92vw, 360px); max-height: 80vh; padding: 1rem; border-radius: 1rem; border: 1px solid var(--border-dark); background: var(--card); color: var(--text); overflow: auto; }
+#helpDialog::backdrop { background: var(--modal-backdrop); }
+#helpDialog h2 { margin: 0.8rem 0 0.4rem; font-size: 0.75rem; text-transform: uppercase; color: var(--text-light); }
+.help-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.3rem 0; font-size: 0.85rem; }
+.help-icon { width: 28px; flex-shrink: 0; display: flex; justify-content: center; font-weight: 700; }
+.help-icon svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+#helpDialog .dot-button { width: 100%; justify-content: center; margin-top: 0.8rem; }
+
+        .action-bar { display: flex; gap: 1rem; justify-content: flex-end; align-items: center; }
+        
+        .square-btn {
+            width: 44px; height: 44px;
+            background: var(--btn-bg); 
+            color: var(--btn-text);
+            border: 1px solid var(--border-dark);
+            border-radius: 0.75rem; 
+            cursor: pointer;
+            display: inline-flex; align-items: center; justify-content: center;
+        }
+        .square-btn svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+        .square-btn:active { border-color: var(--border-light); transform: translateY(1px); }
+        .btn-test-green svg { stroke: #10b981; }
+        
+        .code-area { display: flex; flex-direction: column; gap: 0.5rem; }
+        .file-header { font-weight: 600; color: var(--text-light); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.code-tools { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.25rem; }
+.code-tools .dot-button { height: 38px; justify-content: center; padding: 0 0.45rem; border-radius: 0.75rem; font-size: 0.72rem; gap: 0.2rem; }
+.code-tools .code-font { width: 32px; padding: 0; }
+.code-tools svg { width: 15px; height: 15px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+        
+        input, textarea, .result, #status {
+            color: var(--text) !important;
+            background: var(--code-bg) !important;
+            border: 1px solid var(--border-dark);
+        }
+        
+        textarea {
+            width: 100%; padding: 1rem; border-radius: 1rem;
+            font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace; font-size: 0.8rem;
+            resize: vertical;
+        }
+#reactCode { flex-grow: 1; min-height: 140px; font-size: var(--code-font, 0.8rem); }
+.toggle-icon svg { color: #ef4444; }
+.toggle-icon[aria-pressed="true"] svg { color: #10b981; }
+
+/* La couche colorée est placée sous le texte, devenu transparent */
+.code-editor { position: relative; display: flex; flex-direction: column;
+    --c-kw: #8250df; --c-str: #116329; --c-num: #b35900; --c-com: #6e7781; --c-tag: #0550ae; --c-attr: #953800; --c-fn: #a3215f; }
+body.dark .code-editor { --c-kw: #c792ea; --c-str: #a5d6a7; --c-num: #ffb86c; --c-com: #7d8799; --c-tag: #6cb6ff; --c-attr: #ffd580; --c-fn: #ff8fab; }
+.code-editor pre { display: none; }
+.code-editor.colorized pre, .code-editor.colorized #reactCode {
+    box-sizing: border-box; margin: 0; padding: 1rem; border-radius: 1rem;
+    font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace; font-size: var(--code-font, 0.8rem);
+    line-height: 1.45; letter-spacing: normal; font-variant-ligatures: none; tab-size: 4;
+    white-space: pre-wrap; overflow-wrap: break-word; -webkit-text-size-adjust: 100%;
+}
+.code-editor.colorized pre { display: block; position: absolute; top: 0; left: 0; overflow: hidden; pointer-events: none; background: var(--code-bg); color: var(--text); border: 1px solid transparent; }
+.code-editor.colorized #reactCode { position: relative; color: transparent !important; background: transparent !important; caret-color: var(--text); scrollbar-width: none; }
+.code-editor.colorized #reactCode::selection { background: rgba(59,130,246,0.35); color: transparent; }
+.c-kw { color: var(--c-kw); }
+.c-str { color: var(--c-str); }
+.c-num { color: var(--c-num); }
+.c-com { color: var(--c-com); }
+.c-tag { color: var(--c-tag); }
+.c-attr { color: var(--c-attr); }
+.c-fn { color: var(--c-fn); }
+        
+        #previewContainer {
+            position: relative; background: var(--code-bg); border-radius: 1rem;
+            margin: 0 auto; padding: 0;
+            border: 1px solid var(--border-dark);
+            overflow: hidden; width: 100%; max-width: 360px; aspect-ratio: 9 / 16;
+            display: flex; flex-direction: column;
+            transition: all 0.3s ease;
+        }
+        #previewArea {
+            flex: 1; width: 100%; height: 100%;
+            background: transparent;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-light);
+        }
+        #previewArea iframe { width: 100%; height: 100%; border: none; display: block; background: #fff; }
+        
+        .internal-fullscreen-btn {
+            position: absolute; top: 12px; right: 12px; z-index: 10;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 50%; width: 40px; height: 40px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: white; transition: 0.2s;
+        }
+        .internal-fullscreen-btn svg { width: 20px; height: 20px; fill: none; stroke: white; stroke-width: 2; }
+        .internal-fullscreen-btn:active { transform: scale(0.9); }
+
+        /* --- Simulation plein écran (100% fiable) --- */
+        .fake-fullscreen {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            max-width: none !important;
+            margin: 0 !important;
+            border-radius: 0 !important;
+            z-index: 99990 !important;
+            background: var(--code-bg) !important;
+            aspect-ratio: auto !important;
+        }
+        .fake-fullscreen .internal-fullscreen-btn {
+            display: none; /* cache le bouton interne quand on est en plein écran */
+        }
+        .fake-fullscreen #previewArea iframe {
+            height: 100% !important;
+        }
+        /* --- Fin simulation --- */
+
+        .files-tools { display: flex; gap: 0.4rem; justify-content: center; flex-wrap: wrap; margin-top: 0.5rem; }
+        .files-tools .dot-button { gap: 0.35rem; padding: 0.6rem 0.65rem; font-size: 0.75rem; }
+/* L'appui long ne doit ni sélectionner le texte ni ouvrir de menu */
+#exportHtmlBtn { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+        .dot-button {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            background: var(--btn-bg); color: var(--btn-text);
+            border: 1px solid var(--border-dark);
+            padding: 0.6rem 1.2rem; border-radius: 2rem; font-size: 0.8rem; font-weight: 600;
+            cursor: pointer; 
+        }
+        .dot-button:active { border-color: var(--border-light); transform: translateY(1px); }
+        .dot { width: 10px; height: 10px; border-radius: 50%; background-color: #ef4444; box-shadow: inset 1px 1px 2px rgba(0,0,0,0.3); transition: background-color 0.2s; }
+        .dot.green { background-color: #10b981; }
+
+        .repo-line { display: flex; align-items: flex-end; gap: 1rem; margin-top: 0.5rem; }
+        .repo-line .repo-field { flex: 1; display: flex; flex-direction: column; gap: 0.4rem; }
+        
+        label { font-weight: 600; color: var(--text-light); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; margin-left: 0.2rem; }
+        
+        input {
+            width: 100%; padding: 0 1rem; border-radius: 0.75rem;
+            font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.8rem;
+            height: 46px;
+            border: 1px solid var(--border-dark);
+        }
+        
+        .token-paste-btn {
+            width: 46px; height: 46px; border-radius: 0.75rem; background-color: #ef4444;
+            border: 1px solid var(--border-dark);
+            cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+            color: white; transition: all 0.2s ease;
+        }
+        .token-paste-btn svg { width: 22px; height: 22px; fill: none; stroke: white; stroke-width: 2.5; }
+        .token-paste-btn:active { border-color: var(--border-light); transform: translateY(1px); }
+        .token-paste-btn.green { 
+            background-color: #10b981; 
+        }
+
+        .preview { text-align: center; margin-top: 0.5rem; }
+        .preview img { max-width: 64px; border-radius: 1rem; border: 1px solid var(--border-dark); padding: 4px; background: var(--btn-bg); }
+        
+        .button-bar { display: flex; justify-content: center; margin-top: 0.5rem; }
+        #deployBtn { 
+            background: var(--accent); color: white; 
+            padding: 0.8rem 2rem; border-radius: 1rem; border: 1px solid rgba(255,255,255,0.3);
+            font-weight: 700; font-size: 1rem; cursor: pointer; 
+            transition: all 0.2s ease;
+        }
+        #deployBtn:active { transform: translateY(2px); border-color: rgba(255,255,255,0.6); }
+        
+        .result, #status {
+            border-radius: 1rem; padding: 1rem; margin: 0;
+            font-size: 0.85rem; font-weight: 500;
+            border: 1px solid var(--border-dark);
+        }
+        
+        .status-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .status-wrapper #status {
+            flex: 1;
+        }
+        .copy-console-btn {
+            background: var(--btn-bg);
+            border: 1px solid var(--border-dark);
+            border-radius: 0.75rem;
+            padding: 0.5rem 0.8rem;
+            cursor: pointer;
+            color: var(--btn-text);
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            white-space: nowrap;
+        }
+        .copy-console-btn:active {
+            transform: scale(0.96);
+            border-color: var(--border-light);
+        }
+        .copy-console-btn svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2.5;
+        }
+        
+        .checklist { background: var(--btn-bg); border-radius: 1rem; padding: 1rem; margin: 0; border: 1px solid var(--border-dark); }
+        .checklist-item { display: flex; align-items: center; gap: 0.75rem; margin: 0.5rem 0; font-size: 0.85rem; font-weight: 500; }
+        
+        .btn-link { 
+            display: inline-block; background: var(--btn-bg); color: var(--btn-text); 
+            padding: 0.6rem 1.2rem; border-radius: 0.75rem; text-decoration: none; 
+            font-weight: 600; margin-top: 1rem; border: 1px solid var(--border-dark);
+        }
+        .btn-link:active { border-color: var(--border-light); }
+        
+        .footer {
+            text-align: center; margin-top: 1rem;
+            color: var(--text-light); font-size: 0.75rem; font-weight: 500;
+            display: flex; flex-direction: column; align-items: center; gap: 0.75rem;
+        }
+        .footer img { width: 64px; height: auto; opacity: 0.8; border-radius: 0.75rem; border: 1px solid var(--border-dark); }
+        
+        .global-exit-fullscreen {
+            position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px;
+            border-radius: 50%; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.1); color: white;
+            display: none; align-items: center; justify-content: center;
+            cursor: pointer; z-index: 99999; 
+        }
+        .global-exit-fullscreen svg { width: 28px; height: 28px; fill: none; stroke: white; stroke-width: 2.5; }
+        
+        .hidden-textarea { display: none; }
+        #githubToken { display: none; }
+        
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--modal-backdrop); backdrop-filter: blur(4px); z-index: 1000;
+            align-items: center; justify-content: center;
+        }
+        .modal-content {
+            background: var(--modal-bg); border-radius: 1.25rem; width: 90%; max-width: 700px;
+            max-height: 85vh; display: flex; flex-direction: column; padding: 1.5rem; gap: 1rem;
+            border: 1px solid var(--border-dark);
+        }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 0.5rem; }
+        .modal-actions button {
+            background: var(--btn-bg); color: var(--btn-text);
+            padding: 0.6rem 1.2rem; border-radius: 0.75rem; border: 1px solid var(--border-dark);
+            font-weight: 600; cursor: pointer;
+        }
+        .modal-actions button:active { border-color: var(--border-light); }
+        #modalSaveBtn { background: var(--accent); color: white; border: 1px solid rgba(255,255,255,0.3); }
+        #modalSaveBtn:active { border-color: rgba(255,255,255,0.6); }
+        
+        @media (max-width: 640px) { 
+            .card { padding: 1rem; border-radius: 1rem; }
+            #previewContainer { max-width: 100%; } 
+            .action-bar { justify-content: center; width: 100%; margin-top: 0.5rem; } 
+.status-wrapper { flex-wrap: nowrap; }
+.copy-console-btn { justify-content: center; }
+        }
+
+        /* Effet de clic */
+        .click-effect {
+            animation: clickAnim 0.15s ease;
+        }
+        @keyframes clickAnim {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.92); }
+            100% { transform: scale(1); }
+        }
+
+        /* LED globale */
+        #globalLed {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #10b981;
+            z-index: 99999;
+            opacity: 0;
+            transition: opacity 0.1s ease;
+            box-shadow: 0 0 12px #10b981;
+            pointer-events: none;
+        }
+        #globalLed.active {
+            opacity: 1;
+        }
+.react-blocks { display: flex; flex-direction: column; gap: 0.75rem; }
+#aiResponse { min-height: 100px; }
+.react-blocks-actions { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+.react-blocks pre { white-space: pre-wrap; font-size: 0.8rem; max-height: 220px; overflow: auto; }
+#applyBlocksBtn:disabled { opacity: 0.4; cursor: default; }
+.ai-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
+.ai-bar.main-bar { grid-template-columns: repeat(4, 1fr); gap: 0.4rem; }
+.main-bar .square-btn svg { width: 26px; height: 26px; }
+.project-bar { display: flex; gap: 0.35rem; align-items: center; }
+.project-bar .square-btn:disabled { opacity: 0.4; cursor: default; }
+.project-bar .square-btn { width: 44px; height: 44px; flex-shrink: 0; }
+#projectTools .square-btn { width: 40px; height: 40px; flex-shrink: 0; }
+#projectSelect { flex: 1 1 100%; min-width: 0; height: 40px; padding: 0 0.5rem; border-radius: 0.75rem; background: var(--btn-bg); color: var(--text); border: 1px solid var(--border-dark); font-weight: 600; }
+#projectToggle { flex: 1; height: 44px; justify-content: center; min-width: 0; padding: 0 0.5rem; gap: 0.3rem; }
+#projectName { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#projectTools { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.4rem; }
+#projectTools[hidden] { display: none; }
+#historyPanel { display: flex; flex-direction: column; gap: 0.4rem; max-height: 240px; overflow: auto; }
+#historyPanel[hidden] { display: none; }
+#historyPanel button { text-align: left; font-size: 0.78rem; padding: 0.5rem 0.75rem; border-radius: 0.75rem; background: var(--btn-bg); color: var(--text); border: 1px solid var(--border-dark); cursor: pointer; flex-shrink: 0; }
+#rollbackBtn { align-self: center; background: #f59e0b; color: #111; }
+#rollbackBtn[hidden] { display: none; }
+.pick-bar { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: nowrap; }
+#pickBtn { flex-shrink: 0; white-space: nowrap; }
+#copyPickBtn { display: inline-block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; background: var(--accent); color: white; }
+#copyPickBtn[hidden] { display: none; }
+.ai-bar .ai-btn { width: 100%; height: 60px; flex-direction: column; gap: 0.25rem; font-size: 0.68rem; font-weight: 600; }
+.ai-bar .ai-main { background: var(--accent); color: white; }
+.ai-bar .ai-btn:disabled { opacity: 0.4; cursor: default; }
+#advancedPanel > summary { list-style: none; text-align: center; cursor: pointer; font-size: 1.4rem; line-height: 1; padding: 0.25rem; color: var(--text-light); }
+#advancedPanel > .react-blocks { margin-top: 0.5rem; }
+#blocksReport:empty { display: none; }
+.card > .status-wrapper { position: sticky; bottom: 0.5rem; z-index: 20; }
+#fixErrorBtn { align-self: center; background: #ef4444; color: white; }
+#fixErrorBtn[hidden] { display: none; }
+#reactIndex { max-height: 220px; overflow: auto; }
+/* Un seul style pour tous les boutons : mêmes hauteurs, coins, icônes et espacements */
+:root { --btn-h: 48px; --btn-radius: 14px; --btn-gap: 8px; --ok: #10b981; --danger: #ef4444; --warn: #f59e0b; }
+
+.card .square-btn, .card .dot-button, .card .dark-toggle, .card .token-paste-btn,
+.card .copy-console-btn, .card #deployBtn, #helpDialog .dot-button, .modal-actions button {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    min-width: 0; height: var(--btn-h); margin: 0; padding: 0 8px;
+    border-radius: var(--btn-radius); border: 1px solid var(--border-dark);
+    background: var(--btn-bg); color: var(--btn-text);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.18);
+    font-family: inherit; font-size: 0.8rem; font-weight: 600; line-height: 1.1; white-space: nowrap;
+    cursor: pointer; user-select: none; -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+}
+.card button:active, #helpDialog button:active { transform: scale(0.96); }
+.card button:focus-visible, .card summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.card button:disabled { opacity: 0.4; cursor: default; box-shadow: none; }
+.card button[hidden] { display: none; }
+
+.card button svg, .card .token-paste-btn svg {
+    width: 22px; height: 22px; flex-shrink: 0;
+    fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
+}
+
+/* En-tête */
+.card h1 { display: flex; align-items: center; gap: var(--btn-gap); white-space: nowrap; }
+.card h1 #helpBtn, .card h1 #darkModeToggle { width: var(--btn-h); flex-shrink: 0; padding: 0; font-size: 1.15rem; }
+.card h1 #helpBtn { margin-left: auto; }
+
+/* Réglages : gris = coupé, vert = activé */
+.card .action-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--btn-gap); width: 100%; }
+.card .action-bar .square-btn { width: 100%; }
+.card .toggle-icon svg { color: var(--text-light); }
+.card .toggle-icon[aria-pressed="true"] svg { color: var(--ok); }
+.card .toggle-icon[aria-pressed="true"] { border-color: var(--ok); background: rgba(16,185,129,0.14); }
+
+/* Projet */
+.card .project-bar { display: grid; grid-template-columns: var(--btn-h) var(--btn-h) minmax(0, 1fr) var(--btn-h) var(--btn-h); gap: 6px; }
+.card .project-bar .square-btn, .card .project-bar #projectToggle { width: 100%; height: var(--btn-h); }
+.card #projectTools:not([hidden]) { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--btn-gap); }
+.card #projectTools select { grid-column: 1 / -1; width: 100%; height: var(--btn-h); border-radius: var(--btn-radius); }
+.card #projectTools .square-btn { width: 100%; height: var(--btn-h); }
+#historyPanel button { min-height: var(--btn-h); border-radius: var(--btn-radius); }
+
+/* Outils du code : cinq cases égales */
+.card .code-tools { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.card .code-tools .dot-button, .card .code-tools .code-font { width: 100%; height: 56px; padding: 0 2px; flex-direction: column; gap: 4px; font-size: 0.7rem; }
+.card .code-tools .code-font { font-size: 1rem; }
+
+/* Actions principales */
+.card .ai-bar, .card .ai-bar.main-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--btn-gap); }
+.card .ai-bar .ai-btn { width: 100%; height: 60px; flex-direction: column; gap: 4px; font-size: 0.7rem; }
+.card .main-bar .square-btn svg { width: 26px; height: 26px; }
+.card .ai-bar .ai-main { background: var(--accent); border-color: var(--accent); color: white; }
+.card #runPreviewBtn { color: var(--ok); }
+#advancedPanel > summary {
+    display: flex; align-items: center; justify-content: center; height: 36px; padding: 0;
+    border-radius: var(--btn-radius); border: 1px dashed var(--border-dark); -webkit-tap-highlight-color: transparent;
+}
+
+/* Boutons larges */
+.card #fixErrorBtn, .card #rollbackBtn { align-self: stretch; width: 100%; }
+.card #fixErrorBtn { background: var(--danger); border-color: var(--danger); color: white; }
+.card #rollbackBtn { background: var(--warn); border-color: var(--warn); color: #111; }
+.card .pick-bar { display: flex; gap: var(--btn-gap); }
+.card .pick-bar .dot-button { flex: 1 1 0; }
+.card .pick-bar #copyPickBtn:not([hidden]) { display: inline-flex; flex-grow: 1.6; background: var(--accent); border-color: var(--accent); color: white; }
+.card .pick-bar .dot-button[hidden] { display: none; }
+.btn-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+
+/* Fichiers publiés */
+.card .files-tools { display: grid; grid-template-columns: 1.15fr 1.35fr 0.9fr; gap: 6px; }
+.card .files-tools .dot-button { width: 100%; padding: 0 4px; gap: 5px; font-size: 0.72rem; }
+.card .files-tools .dot { flex-shrink: 0; width: 9px; height: 9px; }
+
+/* Publication */
+.card .repo-line { gap: var(--btn-gap); }
+.card .repo-line input { height: var(--btn-h); border-radius: var(--btn-radius); }
+.card .token-paste-btn { width: var(--btn-h); flex-shrink: 0; padding: 0; background: var(--danger); border-color: var(--danger); color: white; }
+.card .token-paste-btn.green { background: var(--ok); border-color: var(--ok); }
+.card #iconInput { height: var(--btn-h); padding: 5px !important; border-radius: var(--btn-radius); }
+.card #iconInput::file-selector-button {
+    height: 36px; margin-right: 10px; padding: 0 14px; border-radius: 10px; cursor: pointer;
+    border: 1px solid var(--border-dark); background: var(--btn-bg); color: var(--btn-text); font-weight: 600;
+}
+.card .button-bar { display: flex; }
+.card #deployBtn { width: 100%; height: 54px; gap: 8px; background: var(--accent); border-color: var(--accent); color: white; font-size: 1rem; font-weight: 700; }
+.card .btn-link { display: flex; align-items: center; justify-content: center; min-height: var(--btn-h); border-radius: var(--btn-radius); }
+.card .status-wrapper { gap: var(--btn-gap); }
+.card .copy-console-btn { width: var(--btn-h); flex-shrink: 0; padding: 0; }
+#helpDialog .dot-button { width: 100%; margin-top: 0.8rem; }
+
+/* Écrans très étroits : les cinq boutons projet restent sur une ligne */
+@media (max-width: 359px) {
+    :root { --btn-h: 44px; --btn-gap: 6px; }
+    .card h1 { font-size: 1.15rem; }
+    .card #projectArrow { display: none; }
+}
+.card .pick-bar .square-btn { width: var(--btn-h); flex-shrink: 0; padding: 0; }
+/* « Désigner » reste entier, « Copier » prend la place restante */
+.card .pick-bar #pickBtn { flex: 1 0 auto; padding: 0 12px; }
+.card .pick-bar #copyPickBtn:not([hidden]) { flex: 100 1 0; }
+@media (max-width: 359px) { .card .pick-bar .dot-button svg { display: none; } }
+    </style>
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#030917">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon.png">
+<meta property="og:title" content="Reactor">
+<meta name="twitter:title" content="Reactor">
+<meta name="application-name" content="Reactor">
+<meta name="apple-mobile-web-app-title" content="Reactor">
+<meta name="description" content="DEV">
+<meta property="og:description" content="DEV">
+<meta name="twitter:description" content="DEV">
+<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="./icon.png">
+<meta property="og:image" content="https://mekeirish.github.io/Reactor/icon.png">
+<meta name="twitter:image" content="https://mekeirish.github.io/Reactor/icon.png">
+<meta name="twitter:card" content="summary">
+<meta property="og:url" content="https://mekeirish.github.io/Reactor/">
+<link rel="apple-touch-startup-image" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="./splash-1320x2868.png">
+<link rel="apple-touch-startup-image" media="(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="./splash-1206x2622.png">
+<link rel="apple-touch-startup-image" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="./splash-1290x2796.png">
+<link rel="apple-touch-startup-image" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="./splash-1179x2556.png">
+<link rel="apple-touch-startup-image" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="./splash-1284x2778.png">
+<link rel="apple-touch-startup-image" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="./splash-1170x2532.png">
+<link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="./splash-1242x2688.png">
+<link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="./splash-828x1792.png">
+<link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="./splash-1125x2436.png">
+<link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="./splash-1242x2208.png">
+<link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="./splash-750x1334.png">
+<link rel="apple-touch-startup-image" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="./splash-640x1136.png">
+</head>
+<body>
+<div class="card">
+    <h1>⚛️ LB Reactor <button class="dark-toggle" id="darkModeToggle">🌙 Dark</button></h1>
+    <div class="action-bar">
+        <!-- BOUTON PROMPT -->
+        <!-- BOUTON TOGGLE SIGNATURE AVEC LED -->
+<button id="toggleSigBtn" class="square-btn toggle-icon" title="Signature" aria-label="Signature" aria-pressed="false">
+    <svg viewBox="0 0 24 24"><path d="M3 17c3 0 6-12 9-11s-4 11-1 11 3-4 5-4 1 4 5 3M3 21h18"></path></svg>
+</button>
+<button id="colorToggleBtn" class="square-btn toggle-icon" title="Colorer le code" aria-label="Colorer le code" aria-pressed="false">
+    <svg viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"></path></svg>
+</button>
+<button id="fullToggleBtn" class="square-btn toggle-icon" title="Plein écran quand on teste" aria-label="Plein écran quand on teste" aria-pressed="false">
+    <svg viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+</button>
+<button id="autoSaveBtn" class="square-btn toggle-icon" title="Sauvegarde automatique en ligne après 30 secondes" aria-label="Sauvegarde automatique" aria-pressed="false">
+    <svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14-5L4 8M4 3v5h5M4 13a8 8 0 0 0 14 5l2-2M20 21v-5h-5"></path></svg>
+</button>
+    </div>
+<div class="project-bar">
+    <button id="promptBtn" class="square-btn" title="Copier le protocole" aria-label="Copier le protocole">
+        <svg viewBox="0 0 24 24"><path d="M12 3l2.5 6 6.5.5-5 4.5 1.5 6.5-5.5-3.5-5.5 3.5L8 14 3 9.5l6.5-.5z"></path></svg>
+    </button>
+    <button id="firstCodeBtn" class="square-btn" title="Installer le premier code" aria-label="Installer le premier code">
+        <svg viewBox="0 0 24 24"><path d="M14 3H6v18h12V7zM12 11v6M9 14h6"></path></svg>
+    </button>
+    <button id="projectToggle" class="dot-button" aria-expanded="false" aria-controls="projectTools">
+        <span id="projectName" class="btn-label">Projet</span> <span id="projectArrow">▾</span>
+    </button>
+    <button id="backupBtn" class="square-btn" title="Sauvegarder tous les projets en ligne" aria-label="Sauvegarder tous les projets en ligne">
+        <svg viewBox="0 0 24 24"><path d="M7 18a5 5 0 1 1 .9-9.9A6 6 0 0 1 19.5 10 4 4 0 0 1 18 18M12 20v-8M9 15l3-3 3 3"></path></svg>
+    </button>
+    <button id="restoreBtn" class="square-btn" title="Restaurer les projets sauvegardés" aria-label="Restaurer les projets sauvegardés">
+        <svg viewBox="0 0 24 24"><path d="M7 18a5 5 0 1 1 .9-9.9A6 6 0 0 1 19.5 10 4 4 0 0 1 18 18M12 12v8M9 17l3 3 3-3"></path></svg>
+    </button>
+</div>
+<div id="projectTools" hidden>
+    <select id="projectSelect" aria-label="Projet"></select>
+    <button id="newProjectBtn" class="square-btn" title="Nouveau projet" aria-label="Nouveau projet">
+        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg>
+    </button>
+    <button id="renameProjectBtn" class="square-btn" title="Renommer le projet" aria-label="Renommer le projet">
+        <svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16zM13 7l4 4"></path></svg>
+    </button>
+    <button id="deleteProjectBtn" class="square-btn" title="Supprimer le projet" aria-label="Supprimer le projet">
+        <svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path></svg>
+    </button>
+    <button id="historyBtn" class="square-btn" title="Historique" aria-label="Historique">
+        <svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 3-6.2L4 8M4 3v5h5M12 8v5l3 2"></path></svg>
+    </button>
+    <button id="cloudKeyBtn" class="square-btn" title="Saisir la clé de sauvegarde" aria-label="Saisir la clé de sauvegarde">
+        <svg viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"></circle><path d="M11 12l9-9M16 7l3 3"></path></svg>
+    </button>
+</div>
+<div id="historyPanel" hidden></div>
+<div class="react-blocks">
+    <div class="ai-bar main-bar">
+        <button id="undoBlocksBtn" class="square-btn ai-btn" title="Annuler le dernier changement" aria-label="Annuler le dernier changement">
+            <svg viewBox="0 0 24 24"><path d="M9 5L4 10l5 5M4 10h10a6 6 0 0 1 0 12h-3"></path></svg>
+        </button>
+        <button id="pasteApplyBtn" class="square-btn ai-btn ai-main" title="Coller et appliquer la réponse" aria-label="Coller et appliquer la réponse">
+            <svg viewBox="0 0 24 24"><path d="M8 4H5v17h14V4h-3M9 3h6v4H9zM8 14l3 3 5-6"></path></svg>
+        </button>
+        <button id="redoBlocksBtn" class="square-btn ai-btn" title="Reprendre le changement annulé" aria-label="Reprendre le changement annulé">
+            <svg viewBox="0 0 24 24"><path d="M15 5l5 5-5 5M20 10H10a6 6 0 0 0 0 12h3"></path></svg>
+        </button>
+        <button id="runPreviewBtn" class="square-btn ai-btn btn-test-green" title="Tester l'aperçu" aria-label="Tester l'aperçu">
+            <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21" fill="currentColor" stroke="none"></polygon></svg>
+        </button>
+    </div>
+    <pre id="blocksReport"></pre>
+    <details id="advancedPanel">
+        <summary title="Plus d'outils" aria-label="Plus d'outils">⋯</summary>
+        <div class="react-blocks">
+            <div class="ai-bar">
+                <button id="sendCodeBtn" class="square-btn ai-btn" title="Envoyer mon code à l'IA">
+                    <svg viewBox="0 0 24 24"><path d="M3 11l18-8-8 18-2-8z"></path></svg>
+                    <span>Mon code</span>
+                </button>
+                <button id="copyIndexBtn" class="square-btn ai-btn" title="Copier l'index des blocs">
+                    <svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"></path></svg>
+                    <span>Index</span>
+                </button>
+                <button id="analyzeBlocksBtn" class="square-btn ai-btn" title="Analyser la réponse sans l'appliquer">
+                    <svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6"></circle><path d="M15 15l6 6"></path></svg>
+                    <span>Analyser</span>
+                </button>
+                <button id="applyBlocksBtn" class="square-btn ai-btn" title="Valider la réponse analysée" disabled>
+                    <svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"></path></svg>
+                    <span>Valider</span>
+                </button>
+            </div>
+            <textarea id="aiResponse" spellcheck="false" placeholder="Collage manuel de la réponse"></textarea>
+            <details id="reactIndexPanel">
+                <summary>Blocs</summary>
+                <pre id="reactIndex" class="result"></pre>
+            </details>
+        </div>
+    </details>
+</div>
+<button id="fixErrorBtn" class="dot-button" title="Copier l'erreur pour l'IA" hidden>
+    <svg viewBox="0 0 24 24"><path d="M12 4L2 20h20zM12 10v4M12 17h.01"></path></svg>
+    Corriger
+</button>
+<button id="rollbackBtn" class="dot-button" title="Revenir à la version d'avant" hidden>
+    <svg viewBox="0 0 24 24"><path d="M9 5L4 10l5 5M4 10h10a6 6 0 0 1 0 12h-3"></path></svg>
+    Revenir à la version d'avant
+</button>
+    <div class="code-area">
+        <div class="file-header">📝 Code React (JSX/TSX)</div>
+<div class="code-tools">
+    <button id="fontDownBtn" class="dot-button code-font" title="Réduire la police du code" aria-label="Réduire la police du code">A−</button>
+    <button id="fontUpBtn" class="dot-button code-font" title="Agrandir la police du code" aria-label="Agrandir la police du code">A+</button>
+    <button id="clearCodeBtn" class="dot-button" title="Vider le champ code">
+        <svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path></svg> Vider
+    </button>
+    <button id="copyCodeBtn" class="dot-button" title="Copier le code">
+        <svg viewBox="0 0 24 24"><path d="M9 9h11v11H9zM15 5H4v11"></path></svg> Copier
+    </button>
+    <button id="pasteCodeBtn" class="dot-button" title="Remplacer le code par le presse-papiers">
+        <svg viewBox="0 0 24 24"><path d="M8 5H5v16h14V5h-3M9 3h6v4H9zM12 11v6M9 14l3 3 3-3"></path></svg> Coller
+    </button>
+</div>
+        <textarea id="reactCode" spellcheck="false"></textarea>
+    </div>
+<div class="pick-bar">
+    <button id="multiPickBtn" class="square-btn toggle-icon" title="Désigner plusieurs éléments" aria-label="Désigner plusieurs éléments" aria-pressed="false">
+        <svg viewBox="0 0 24 24"><path d="M9 9h11v11H9zM15 5H4v11M14.5 12v5M12 14.5h5"></path></svg>
+    </button>
+    <button id="pickBtn" class="dot-button" title="Toucher un élément de l'aperçu"></button>
+    <button id="copyPickBtn" class="dot-button" title="Copier l'adresse pour l'IA" hidden></button>
+</div>
+    <div id="previewContainer">
+        <button id="internalFullscreenBtn" class="internal-fullscreen-btn" title="Plein écran">
+            <svg viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+        </button>
+        <div id="previewArea">Aperçu</div>
+    </div>
+    <div class="files-tools">
+<button id="exportHtmlBtn" class="dot-button" title="Toucher : copier. Appui long : télécharger."><span class="dot green"></span> index.html</button>
+        <button id="btnManifest" class="dot-button"><span class="dot" id="dotManifest"></span> manifest.json</button>
+        <button id="btnSw" class="dot-button"><span class="dot" id="dotSw"></span> sw.js</button>
+    </div>
+    <textarea id="manifestPreview" class="hidden-textarea"></textarea>
+    <textarea id="swPreview" class="hidden-textarea"></textarea>
+    
+    <div class="repo-line">
+        <div id="tokenPasteBtn" class="token-paste-btn" title="Coller le token GitHub">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="15" r="2.5"></circle><path d="M19 10a7 7 0 0 0-14 0c0 2.5 1.5 4.5 3 6l2 2 2-2c1.5-1.5 3-3.5 3-6z"></path><line x1="12" y1="15" x2="12" y2="21"></line></svg>
+        </div>
+        <div class="repo-field">
+            <label>📁 Nom du dépôt / PWA</label>
+            <input type="text" id="repoName" value="" placeholder="Ex: mon-app">
+        </div>
+    </div>
+    
+    <div class="repo-field" style="margin-top: 0.5rem;">
+        <label>🖼️ Icône de la PWA (PNG/JPG)</label>
+        <input type="file" id="iconInput" accept="image/png,image/jpeg" style="padding-top: 0.6rem;">
+    </div>
+    <div id="previewIcon" class="preview"></div>
+    
+    <div class="button-bar"><button id="deployBtn">🚀 Deploy</button></div>
+    <div id="checklistContainer" class="checklist" style="display:none;"></div>
+    <div id="finalLinkContainer" style="text-align:center"></div>
+    
+    <div class="status-wrapper">
+        <div id="status" class="result">Statut : Prêt.</div>
+<button id="copyConsoleBtn" class="copy-console-btn" title="Copier le message" aria-label="Copier le message">
+    <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+</button>
+    </div>
+    
+    <div class="footer">
+        <div>Made by Laiche Brahim 2026 Paris</div>
+        <a href="https://ibb.co/svJG1ZQk" target="_blank" rel="noopener noreferrer">
+            <img src="https://i.ibb.co/VWpZCsDr/dfg-1.png" alt="dfg-1" border="0">
+        </a>
+    </div>
+</div>
+
+<!-- LED globale -->
+<div id="globalLed"></div>
+
+<div id="globalExitFullscreen" class="global-exit-fullscreen">
+    <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+</div>
+<div id="editorModal" class="modal">
+    <div class="modal-content">
+        <h3 id="modalTitle">Édition</h3>
+        <textarea id="modalTextarea" spellcheck="false" style="min-height: 300px;"></textarea>
+        <div class="modal-actions">
+            <button id="modalSaveBtn">💾 Sauvegarder</button>
+            <button id="modalCancelBtn">Annuler</button>
+        </div>
+    </div>
+</div>
+<input type="password" id="githubToken" placeholder="ghp_...">
+
+<script>
+    const domElements = {
+        toggleDark: document.getElementById('darkModeToggle'),
+        reactCode: document.getElementById('reactCode'),
+        runPreviewBtn: document.getElementById('runPreviewBtn'),
+        pasteCodeBtn: document.getElementById('pasteCodeBtn'),
+        exportHtmlBtn: document.getElementById('exportHtmlBtn'),
+        previewArea: document.getElementById('previewArea'),
+        statusDiv: document.getElementById('status'),
+        manifestPreview: document.getElementById('manifestPreview'),
+        swPreview: document.getElementById('swPreview'),
+        deployBtn: document.getElementById('deployBtn'),
+        tokenInput: document.getElementById('githubToken'),
+        repoInput: document.getElementById('repoName'),
+        checklistContainer: document.getElementById('checklistContainer'),
+        finalLinkContainer: document.getElementById('finalLinkContainer'),
+        previewContainerDiv: document.getElementById('previewContainer'),
+        globalExitBtn: document.getElementById('globalExitFullscreen'),
+        internalFullscreenBtn: document.getElementById('internalFullscreenBtn'),
+        tokenPasteBtn: document.getElementById('tokenPasteBtn'),
+        btnManifest: document.getElementById('btnManifest'),
+        btnSw: document.getElementById('btnSw'),
+        dotManifest: document.getElementById('dotManifest'),
+        dotSw: document.getElementById('dotSw'),
+        modal: document.getElementById('editorModal'),
+        modalTitle: document.getElementById('modalTitle'),
+        modalTextarea: document.getElementById('modalTextarea'),
+        modalSaveBtn: document.getElementById('modalSaveBtn'),
+        modalCancelBtn: document.getElementById('modalCancelBtn'),
+        iconInput: document.getElementById('iconInput'),
+        previewIcon: document.getElementById('previewIcon'),
+        toggleSigBtn: document.getElementById('toggleSigBtn'),
+        led: document.getElementById('led'),
+        promptBtn: document.getElementById('promptBtn'),
+        copyConsoleBtn: document.getElementById('copyConsoleBtn')
+    };
+
+    // --- BOUTON PROMPT : Copie du contenu de prompt.txt ---
+    async function copyPromptToClipboard() {
+try {
+    await copyTextToClipboard(REACT_PROMPT, "✅ Protocole copié : colle-le à l'IA, puis décris ton application.");
+} catch (err) {
+    showError(`Erreur : ${err.message}`);
+}
+    }
+
+    if (domElements.promptBtn) {
+        domElements.promptBtn.addEventListener('click', copyPromptToClipboard);
+    }
+
+    // --- LOGIQUE SIGNATURE AVEC LED ---
+    let isSignatureEnabled = false; // désactivé par défaut
+
+    if (domElements.toggleSigBtn) {
+        domElements.toggleSigBtn.addEventListener('click', () => {
+            isSignatureEnabled = !isSignatureEnabled;
+            domElements.toggleSigBtn.setAttribute('aria-pressed', String(isSignatureEnabled));
+            runInPreview();
+        });
+    }
+
+    function updateThemeBtn() {
+        if (domElements.toggleDark) {
+            const dark = document.body.classList.contains('dark');
+            const label = dark ? "Passer en mode clair" : "Passer en mode sombre";
+            domElements.toggleDark.innerHTML = dark
+                ? '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"></path></svg>'
+                : '<svg viewBox="0 0 24 24"><path d="M20 14a8 8 0 0 1-10-10 8 8 0 1 0 10 10z"></path></svg>';
+            domElements.toggleDark.title = label;
+            domElements.toggleDark.setAttribute('aria-label', label);
+        }
+    }
+    if (domElements.toggleDark) {
+        if (localStorage.getItem('darkMode') === null) {
+            localStorage.setItem('darkMode', 'true');
+            document.body.classList.add('dark');
+        } else if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark');
+        } else {
+            document.body.classList.remove('dark');
+        }
+        updateThemeBtn();
+        domElements.toggleDark.onclick = () => {
+            document.body.classList.toggle('dark');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+            updateThemeBtn();
+        };
+    }
+
+    let uploadedImage = null;
+    let currentEditing = null;
+    let currentPreviewBlobUrl = null;
+
+    // ============================================================
+    // GESTION PLEIN ÉCRAN – 100% DOM, ZÉRO API NATIVE
+    // ============================================================
+    function openFullscreen() {
+        if (domElements.previewContainerDiv) {
+            domElements.previewContainerDiv.classList.add('fake-fullscreen');
+            if (domElements.globalExitBtn) {
+                domElements.globalExitBtn.style.display = 'flex';
+            }
+        }
+    }
+
+    function closeFullscreen() {
+        if (domElements.previewContainerDiv) {
+            domElements.previewContainerDiv.classList.remove('fake-fullscreen');
+            if (domElements.globalExitBtn) {
+                domElements.globalExitBtn.style.display = 'none';
+            }
+        }
+    }
+
+    // Bouton interne pour activer le plein écran
+    if (domElements.internalFullscreenBtn) {
+        domElements.internalFullscreenBtn.addEventListener('click', openFullscreen);
+    }
+
+    // Bouton global pour quitter le plein écran
+    if (domElements.globalExitBtn) {
+        domElements.globalExitBtn.addEventListener('click', closeFullscreen);
+    }
+
+    // (Optionnel) Si l'utilisateur appuie sur Échap, on ferme
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeFullscreen();
+        }
+    });
+    // ============================================================
+
+    async function readClipboardText() {
+        if (navigator.clipboard && navigator.clipboard.readText) {
+            try { return await navigator.clipboard.readText(); } catch (err) { console.warn(err); }
+        }
+        const textarea = document.createElement('textarea');
+        textarea.style.position = 'fixed'; textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        document.execCommand('paste');
+        const pasted = textarea.value;
+        document.body.removeChild(textarea);
+        if (pasted) return pasted;
+        throw new Error("Impossible de lire le presse-papiers.");
+    }
+
+    async function pasteIntoReactCode() {
+        try {
+            const text = await readClipboardText();
+            if (text && domElements.reactCode) {
+                await setCodeByHand(text, "📋 Code collé");
+                showMessage("✅ Code collé.");
+            } else showError("Presse-papiers vide.");
+        } catch (err) { showError("Accès presse-papiers impossible."); }
+    }
+    if (domElements.pasteCodeBtn) domElements.pasteCodeBtn.addEventListener('click', pasteIntoReactCode);
+
+    function updateTokenButton() {
+        if (domElements.tokenInput && domElements.tokenPasteBtn) {
+            const token = domElements.tokenInput.value.trim();
+            if (token) {
+                domElements.tokenPasteBtn.classList.add('green');
+                domElements.tokenPasteBtn.style.backgroundColor = '#10b981';
+            } else {
+                domElements.tokenPasteBtn.classList.remove('green');
+                domElements.tokenPasteBtn.style.backgroundColor = '#ef4444';
+            }
+        }
+    }
+    async function pasteTokenFromClipboard() {
+        try {
+            const text = await readClipboardText();
+            if (text && domElements.tokenInput) {
+                domElements.tokenInput.value = text.trim();
+                updateTokenButton();
+                showMessage("✅ Token collé.");
+            } else showError("Presse-papiers vide.");
+        } catch (err) { showError("Accès presse-papiers impossible."); }
+    }
+    if (domElements.tokenPasteBtn) domElements.tokenPasteBtn.addEventListener('click', pasteTokenFromClipboard);
+
+    let originalManifestContent = '', originalSwContent = '';
+    function updateDotManifest() {
+        if (domElements.dotManifest && domElements.manifestPreview)
+            domElements.dotManifest.classList.toggle('green', domElements.manifestPreview.value !== originalManifestContent);
+    }
+    function updateDotSw() {
+        if (domElements.dotSw && domElements.swPreview)
+            domElements.dotSw.classList.toggle('green', domElements.swPreview.value !== originalSwContent);
+    }
+    function syncOriginalContents() {
+        if (domElements.manifestPreview) originalManifestContent = domElements.manifestPreview.value;
+        if (domElements.swPreview) originalSwContent = domElements.swPreview.value;
+        updateDotManifest(); updateDotSw();
+    }
+
+    function generateManifestAndSW() {
+        let appTitle = domElements.repoInput ? domElements.repoInput.value.trim() : "";
+        if (!appTitle) appTitle = "LB Reactor";
+        let shortName = appTitle.slice(0, 12);
+        let icons = [];
+        if (uploadedImage) {
+            const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
+            icons = sizes.map(s => ({ src: 'icons/icon-' + s + '.png', sizes: s + 'x' + s, type: "image/png" }));
+        }
+        
+        const newManifest = JSON.stringify({
+            name: appTitle,
+            short_name: shortName,
+            start_url: "./",
+            display: "standalone",
+            theme_color: "#030712",
+            background_color: "#030712",
+            icons
+        }, null, 2);
+
+const newSw = `(${offlineServiceWorker})();`;
+
+if (domElements.manifestPreview) domElements.manifestPreview.value = newManifest;
+if (domElements.swPreview) domElements.swPreview.value = newSw;
+
+originalManifestContent = newManifest;
+originalSwContent = newSw;
+updateDotManifest(); 
+updateDotSw();
+    }
+// Devient le fichier sw.js de l'application déployée
+function offlineServiceWorker() {
+    // Un cache par application : toutes partagent le même domaine github.io
+    const cacheName = `lb-${self.registration.scope}`;
+    const libraries = [
+        'https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js',
+        'https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js'
+    ];
+    // Seuls ces serveurs sont mis en cache, jamais les appels de données
+    const hosts = ['cdn.tailwindcss.com', 'cdn.jsdelivr.net', 'unpkg.com', 'fonts.googleapis.com', 'fonts.gstatic.com', 'i.ibb.co'];
+
+    self.addEventListener('install', event => {
+        self.skipWaiting();
+        event.waitUntil(caches.open(cacheName).then(cache => Promise.allSettled([
+            ...['./', 'manifest.json', ...libraries].map(url => cache.add(new Request(url, { cache: 'no-cache' }))),
+            fetch('https://cdn.tailwindcss.com', { mode: 'no-cors' })
+                .then(response => cache.put('https://cdn.tailwindcss.com', response))
+        ])));
+    });
+
+    self.addEventListener('activate', event => event.waitUntil(self.clients.claim()));
+
+    // Réseau d'abord : un redéploiement n'est jamais bloqué par le cache
+    async function networkFirst(request, own) {
+        const cache = await caches.open(cacheName);
+        try {
+            const response = own ? await fetch(request.url, { cache: 'no-cache' }) : await fetch(request);
+            if (response.ok || response.type === 'opaque') {
+                cache.put(request, response.clone()).catch(() => {});
+            }
+            return response;
+        } catch (err) {
+            const saved = await cache.match(request, { ignoreSearch: own, ignoreVary: true })
+                || (request.mode === 'navigate' && await cache.match('./'));
+            if (saved) return saved;
+            throw err;
+        }
+    }
+
+    self.addEventListener('fetch', event => {
+        const request = event.request;
+        if (request.method !== 'GET' || request.headers.has('Authorization')) return;
+        const own = request.url.startsWith(self.registration.scope);
+        if (!own && !hosts.includes(new URL(request.url).hostname)) return;
+        event.respondWith(networkFirst(request, own));
+    });
+}
+
+    function openModal(type) {
+        currentEditing = type;
+        if (domElements.modalTitle) domElements.modalTitle.innerText = type === 'manifest' ? 'Édition de manifest.json' : 'Édition de sw.js';
+        if (domElements.modalTextarea) domElements.modalTextarea.value = type === 'manifest' ? domElements.manifestPreview.value : domElements.swPreview.value;
+        if (domElements.modal) domElements.modal.style.display = 'flex';
+    }
+    function closeModal() { if (domElements.modal) domElements.modal.style.display = 'none'; currentEditing = null; }
+    function saveModalContent() {
+        if (currentEditing === 'manifest' && domElements.manifestPreview && domElements.modalTextarea) {
+            domElements.manifestPreview.value = domElements.modalTextarea.value;
+            originalManifestContent = domElements.manifestPreview.value;
+        } else if (currentEditing === 'sw' && domElements.swPreview && domElements.modalTextarea) {
+            domElements.swPreview.value = domElements.modalTextarea.value;
+            originalSwContent = domElements.swPreview.value;
+        }
+        updateDotManifest(); updateDotSw();
+        closeModal();
+    }
+    if (domElements.btnManifest) domElements.btnManifest.addEventListener('click', () => openModal('manifest'));
+    if (domElements.btnSw) domElements.btnSw.addEventListener('click', () => openModal('sw'));
+    if (domElements.modalSaveBtn) domElements.modalSaveBtn.addEventListener('click', saveModalContent);
+    if (domElements.modalCancelBtn) domElements.modalCancelBtn.addEventListener('click', closeModal);
+    if (domElements.modal) domElements.modal.addEventListener('click', (e) => { if (e.target === domElements.modal) closeModal(); });
+
+    let babelLoaded = false;
+    function ensureBabel() {
+        if (typeof Babel !== 'undefined') return Promise.resolve();
+        if (babelLoaded) return Promise.resolve();
+return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    // Version figée : une mise à jour de Babel ne peut plus casser Reactor
+    script.src = 'https://cdn.jsdelivr.net/npm/@babel/standalone@8.1.3/babel.min.js';
+    script.onload = () => { babelLoaded = true; resolve(); };
+    script.onerror = () => reject(new Error("Impossible de charger Babel"));
+    document.head.appendChild(script);
+});
+    }
+
+    function generateIndexHtml(rawCode, showSignature = true) {
+        let compiledCode = "";
+        try {
+            const result = Babel.transform(rawCode, { 
+                filename: 'component.tsx', 
+                presets: [
+                    ['react', { runtime: 'classic' }],
+                    'typescript'
+                ]
+            });
+            compiledCode = result.code;
+        } catch (err) { 
+            throw new Error(err.message); 
+        }
+
+        const safeCompiled = compiledCode.replace(/<\/script>/gi, '<\\/script>');
+        
+        const signatureHtml = showSignature ? `
+        <footer style="position:absolute; bottom:10px; left:0; width:100%; display:flex; justify-content:center; pointer-events:none; z-index:9999;">
+            <img src="https://i.ibb.co/HfZCBFqK/slb.png" alt="slb" style="width:64px; opacity:0.8;">
+        </footer>` : '';
+
+const errorScript = `
+    // Les hooks React sont disponibles sans déclaration
+    Object.keys(window.React || {}).forEach(function(key) {
+        if (/^use[A-Z]/.test(key)) window[key] = window.React[key];
+    });
+    // Mode hors ligne : sur le site déployé seulement, pas dans l'aperçu
+    if (window.parent === window && window.isSecureContext && location.protocol.indexOf('http') === 0 && 'serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').catch(function(err) { console.warn(err); });
+    }
+    (function() {
+        function send(message) {
+            if (window.parent !== window) window.parent.postMessage({ type: 'lb-error', message: String(message) }, '*');
+        }
+        window.addEventListener('error', function(e) {
+            send(e.message);
+            const root = document.getElementById('root');
+            if (root) {
+                root.innerHTML = '<div style="color:#ef4444; padding:20px; font-family:monospace; background:#fee2e2; border:1px solid #f87171; border-radius:8px; margin:20px; width:calc(100% - 40px); box-sizing:border-box;"><b>❌ Erreur React :</b><br>' + e.message + '</div>';
+            }
+        });
+        window.addEventListener('unhandledrejection', function(e) {
+            send((e.reason && e.reason.message) || e.reason);
+        });
+        // Erreurs attrapées au démarrage de l'application
+        const target = document.getElementById('root');
+        if (target) {
+            new MutationObserver(function() {
+                const text = target.textContent;
+                if (text.indexOf('❌ Erreur d') === 0) send(text.slice(text.indexOf(':') + 1));
+            }).observe(target, { childList: true });
+        }
+    })();
+`;
+
+        return `<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>PWA Render App</title>
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdn.tailwindcss.com"><\/script>
+    <style>
+        body { margin: 0; padding: 0; background-color: #030712; font-family: system-ui; min-height: 100vh; position: relative; }
+        #root { width: 100%; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    ${signatureHtml}
+    <script crossorigin src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"><\/script>
+    <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"><\/script>
+    <script>${errorScript}<\/script>
+    <script>
+        if (window.React) window.React.default = window.React;
+        if (window.ReactDOM) window.ReactDOM.default = window.ReactDOM;
+
+        window.exports = {};
+        window.module = { exports: window.exports };
+        window.require = function(moduleName) {
+            if (moduleName === 'react') return window.React;
+            if (moduleName === 'react-dom' || moduleName === 'react-dom/client') return window.ReactDOM;
+            return {};
+        };
+    <\/script>
+    <script>
+        try {
+            ${safeCompiled}
+            
+            let AppComp = undefined;
+
+            if (window.exports && window.exports.default) {
+                AppComp = window.exports.default;
+            } 
+            else if (window.module && window.module.exports && (typeof window.module.exports === 'function' || Object.keys(window.module.exports).length > 0)) {
+                AppComp = window.module.exports.default || window.module.exports;
+            }
+
+            if (!AppComp || (typeof AppComp === 'object' && Object.keys(AppComp).length === 0)) {
+                if (typeof window.App === 'function') AppComp = window.App;
+                else if (typeof App !== 'undefined') AppComp = App;
+                else if (typeof Main !== 'undefined') AppComp = Main;
+                else {
+                    const globals = Object.keys(window);
+                    for (let key of globals) {
+                        if (/^[A-Z]/.test(key) && typeof window[key] === 'function' && key !== 'React' && key !== 'ReactDOM') {
+                            AppComp = window[key];
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (AppComp) {
+                const container = document.getElementById('root');
+                const root = ReactDOM.createRoot(container);
+                root.render(React.createElement(AppComp));
+            } else {
+                throw new Error("Aucun composant React principal détecté. Veuillez nommer votre composant principal 'App' ou utiliser 'export default'.");
+            }
+        } catch (err) {
+            document.getElementById('root').innerHTML = '<div style="color:#ef4444; padding:20px; font-family:monospace; background:#fee2e2; border:1px solid #f87171; border-radius:8px; margin:20px; box-sizing:border-box;"><b>❌ Erreur d\\'exécution :</b><br>' + err.message + '</div>';
+        }
+    <\/script>
+</body>
+</html>`;
+    }
+
+    async function runInPreview() {
+        const rawCode = domElements.reactCode ? domElements.reactCode.value.trim() : "";
+        if (!rawCode) {
+            showError("Code vide.");
+            if (domElements.previewArea) domElements.previewArea.innerHTML = '<div class="error" style="color:red;padding:20px;">Code source vide</div>';
+            return;
+        }
+try {
+    await ensureBabel();
+    const compiled = generateIndexHtml(tagForPicking(rawCode), isSignatureEnabled);
+    const html = addPreviewPicker(addPreviewStorage(compiled));
+    if (domElements.previewArea) {
+        domElements.previewArea.innerHTML = '';
+        const iframe = document.createElement('iframe');
+        // Sans allow-same-origin : l'application testée n'a pas accès à Reactor
+        iframe.sandbox = 'allow-scripts allow-popups allow-forms';
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
+        iframe.style.border = 'none';
+        iframe.srcdoc = html;
+        domElements.previewArea.appendChild(iframe);
+    }
+    showMessage("✅ Aperçu mis à jour");
+} catch (err) {
+    if (domElements.previewArea) {
+        domElements.previewArea.innerHTML = `<div class="error" style="color:red;padding:20px;background:#fee2e2;border-radius:8px;font-family:monospace;font-size:0.8rem;margin:10px;"><b>Erreur Compilation:</b><br>${err.message}</div>`;
+    }
+    showError(`Échec : ${err.message}`);
+}
+    }
+const PREVIEW_STORAGE_KEY = 'lb-preview-storage';
+// Exécutée dans l'aperçu : remplace localStorage, inaccessible quand il est isolé
+function previewStorageShim(saved) {
+    function createStorage(initial, persist) {
+        const data = new Map(Object.entries(initial));
+        const save = function() {
+            if (persist) window.parent.postMessage({ type: 'lb-storage', data: Object.fromEntries(data) }, '*');
+        };
+        return {
+            getItem: key => (data.has(String(key)) ? data.get(String(key)) : null),
+            setItem: (key, value) => { data.set(String(key), String(value)); save(); },
+            removeItem: key => { data.delete(String(key)); save(); },
+            clear: () => { data.clear(); save(); },
+            key: index => Array.from(data.keys())[index] ?? null,
+            get length() { return data.size; }
+        };
+    }
+    Object.defineProperty(window, 'localStorage', { value: createStorage(saved, true) });
+    Object.defineProperty(window, 'sessionStorage', { value: createStorage({}, false) });
+}
+function addPreviewStorage(html) {
+    let saved = {};
+    try {
+        saved = JSON.parse(localStorage.getItem(PREVIEW_STORAGE_KEY)) || {};
+    } catch (err) {
+        console.warn(err);
+    }
+    const data = JSON.stringify(saved).replace(/</g, '\\u003c');
+    const script = `<script>(${previewStorageShim})(${data});<\/script>`;
+    // Fonction de remplacement : les « $ » des données restent intacts
+    return html.replace('<head>', () => `<head>${script}`);
+}
+function savePreviewStorage(event) {
+    const frame = domElements.previewArea.querySelector('iframe');
+    if (!frame || event.source !== frame.contentWindow) return;
+    if (!event.data || event.data.type !== 'lb-storage') return;
+
+    // Les données de l'application restent dans leur propre clé
+    const text = JSON.stringify(event.data.data);
+    if (text.length > 1000000) return console.warn("Données de l'aperçu trop volumineuses.");
+    localStorage.setItem(PREVIEW_STORAGE_KEY, text);
+}
+window.addEventListener('message', savePreviewStorage);
+
+async function exportFullHtml() {
+    const rawCode = domElements.reactCode ? domElements.reactCode.value.trim() : "";
+    if (!rawCode) return showError("Code vide.");
+    try {
+        await ensureBabel();
+        const html = generateIndexHtml(rawCode, isSignatureEnabled);
+        const blob = new Blob([html], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'index.html';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showMessage("✅ Export HTML téléchargé.");
+    } catch (err) {
+        showError(`Erreur export : ${err.message}`);
+    }
+}
+async function copyIndexHtml() {
+    const rawCode = domElements.reactCode.value.trim();
+    if (!rawCode) return showError("Code vide.");
+    try {
+        await ensureBabel();
+        const html = generateIndexHtml(rawCode, isSignatureEnabled);
+        await copyTextToClipboard(html, "✅ index.html copié (appui long : télécharger).");
+    } catch (err) {
+        showError(`Erreur export : ${err.message}`);
+    }
+}
+// Colore à partir de la lecture réelle du code par Babel (JSX et TypeScript compris)
+function highlightCode(source) {
+    const escape = text => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    let tokens;
+    try {
+        tokens = Babel.packages.parser.parse(source, {
+            sourceType: 'module', plugins: ['jsx', 'typescript'], tokens: true, errorRecovery: true
+        }).tokens;
+    } catch (err) {
+        // Code en cours de frappe : affiché sans couleurs
+        return escape(source);
+    }
+
+    let html = '';
+    let position = 0;
+    tokens.forEach((token, i) => {
+        const label = typeof token.type === 'string' ? token.type : token.type.label;
+        const previous = tokens[i - 1]?.type.label;
+        const next = tokens[i + 1]?.type.label;
+        let color = '';
+
+        if (label.startsWith('Comment')) color = 'com';
+        else if (label === 'string' || label === 'regexp' || label.includes('`') || label.endsWith('${')) color = 'str';
+        else if (label === 'num' || label === 'bigint') color = 'num';
+        else if (label === 'jsxTagStart' || label === 'jsxTagEnd') color = 'tag';
+        else if (label === 'jsxName') color = ['jsxTagStart', '/', '.'].includes(previous) ? 'tag' : 'attr';
+        else if (token.type.keyword || (label === 'name' && /^(async|await|of|as|type|interface)$/.test(token.value))) color = 'kw';
+        else if (label === 'name' && next === '(') color = 'fn';
+        else if (label === 'name' && /^[A-Z]/.test(token.value)) color = 'tag';
+
+        const text = escape(source.slice(token.start, token.end));
+        html += escape(source.slice(position, token.start)) + (color && text ? `<span class="c-${color}">${text}</span>` : text);
+        position = Math.max(position, token.end);
+    });
+    return html + escape(source.slice(position));
+}
+function renderCodeColors() {
+    const field = domElements.reactCode;
+    const layer = document.getElementById('codeColors');
+    if (!field.parentElement.classList.contains('colorized') || typeof Babel === 'undefined') return;
+
+    // Le saut de ligne final garde la même hauteur que le champ
+    layer.innerHTML = `${highlightCode(field.value)}\n `;
+    layer.style.width = `${field.offsetWidth}px`;
+    layer.style.height = `${field.offsetHeight}px`;
+    layer.scrollTop = field.scrollTop;
+}
+function scheduleCodeColors() {
+    cancelAnimationFrame(scheduleCodeColors.frame);
+    scheduleCodeColors.frame = requestAnimationFrame(renderCodeColors);
+}
+async function setColorized(on) {
+    const button = document.getElementById('colorToggleBtn');
+    button.setAttribute('aria-pressed', String(on));
+    localStorage.setItem('lb-colorize', on ? '1' : '0');
+    if (on) {
+        try {
+            await ensureBabel();
+        } catch (err) {
+            return showError(err.message);
+        }
+    }
+    // L'état a pu changer pendant le chargement de Babel
+    domElements.reactCode.parentElement.classList.toggle('colorized', button.getAttribute('aria-pressed') === 'true');
+    scheduleCodeColors();
+}
+
+    if (domElements.runPreviewBtn) {
+        domElements.runPreviewBtn.addEventListener('click', async () => {
+            await ensureBabel();
+            await runInPreview();
+            if (localStorage.getItem('lb-test-fullscreen') === '1' && domElements.reactCode.value.trim()) {
+                openFullscreen();
+            } else {
+                document.getElementById('previewContainer').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
+    }
+    if (domElements.exportHtmlBtn) {
+        // Toucher : copier. Appui long : télécharger.
+        let pressTimer = null;
+        let longPressed = false;
+        const stopPress = () => clearTimeout(pressTimer);
+
+        domElements.exportHtmlBtn.addEventListener('pointerdown', () => {
+            stopPress();
+            longPressed = false;
+            pressTimer = setTimeout(() => {
+                longPressed = true;
+                exportFullHtml();
+            }, 600);
+        });
+        ['pointerup', 'pointerleave', 'pointercancel'].forEach(type => {
+            domElements.exportHtmlBtn.addEventListener(type, stopPress);
+        });
+        domElements.exportHtmlBtn.addEventListener('contextmenu', event => event.preventDefault());
+        domElements.exportHtmlBtn.addEventListener('click', () => {
+            if (!longPressed) copyIndexHtml();
+            longPressed = false;
+        });
+    }
+
+    if (domElements.iconInput) {
+        domElements.iconInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file && (file.type === 'image/png' || file.type === 'image/jpeg')) {
+                uploadedImage = file;
+                const reader = new FileReader();
+                reader.onload = (ev) => { if (domElements.previewIcon) domElements.previewIcon.innerHTML = `<img src="${ev.target.result}">`; };
+                reader.readAsDataURL(file);
+                generateManifestAndSW();
+            } else if (file) {
+                uploadedImage = null;
+                if (domElements.previewIcon) domElements.previewIcon.innerHTML = '';
+                showError("Format PNG/JPG uniquement.");
+            }
+        });
+    }
+
+    const savedCode = localStorage.getItem('lb-reaactor-code');
+    if (savedCode !== null && domElements.reactCode) domElements.reactCode.value = savedCode;
+    generateManifestAndSW();
+    if (domElements.reactCode) {
+        domElements.reactCode.addEventListener('input', () => {
+            localStorage.setItem('lb-reaactor-code', domElements.reactCode.value);
+            generateManifestAndSW();
+        });
+    }
+    if (domElements.repoInput) domElements.repoInput.addEventListener('input', () => generateManifestAndSW());
+
+    const ICON_SIZES = [72,96,128,144,152,192,384,512];
+    function resizeToBlob(file, w, h) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            const url = URL.createObjectURL(file);
+            img.onload = () => {
+                URL.revokeObjectURL(url);
+                const canvas = document.createElement('canvas');
+                canvas.width = w; canvas.height = h;
+                canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                canvas.toBlob(b => b ? resolve(b) : reject(), 'image/png');
+            };
+            img.onerror = reject;
+            img.src = url;
+        });
+    }
+    async function generateIcons(file) {
+        const map = new Map();
+        for (const size of ICON_SIZES) {
+            const blob = await resizeToBlob(file, size, size);
+            map.set(size, { blob, filename: `icon-${size}.png` });
+        }
+        return map;
+    }
+    async function getGitHubUser(token) {
+        const res = await fetch('https://api.github.com/user', { headers: { 'Authorization': `token ${token}` } });
+        if (!res.ok) {
+            if (res.status === 401) throw new Error('Token invalide ou expiré (401)');
+            else if (res.status === 403) throw new Error('Accès interdit (403) – vérifiez les permissions du token');
+            else throw new Error(`Erreur GitHub (${res.status}): ${(await res.text())}`);
+        }
+        return (await res.json()).login;
+    }
+    async function createRepo(owner, repo, token) {
+        const res = await fetch('https://api.github.com/user/repos', {
+            method: 'POST', headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: repo, private: false, auto_init: false })
+        });
+if (!res.ok) {
+    const err = await res.json();
+    const details = [err.message, ...(err.errors || []).map(e => e.message)].join(' ');
+    if (res.status === 422 && details.includes('already exists')) {
+        throw new Error('EXISTS');
+    } else if (res.status === 401) {
+        throw new Error('Token invalide ou expiré (401)');
+    } else {
+        throw new Error(`Erreur création dépôt (${res.status}): ${details}`);
+    }
+}
+    }
+async function getFileSha(owner, repo, path, token) {
+    // Un fichier existant ne peut être remplacé qu'avec son « sha »
+    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=main`, {
+        headers: { 'Authorization': `token ${token}` },
+        cache: 'no-store'
+    });
+    if (res.status === 404) return null;
+    if (!res.ok) throw new Error(`Lecture de ${path} impossible (${res.status})`);
+    return (await res.json()).sha;
+}
+async function uploadFile(owner, repo, path, base64, token, msg) {
+    const sha = await getFileSha(owner, repo, path, token);
+    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+        method: 'PUT', headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: msg, content: base64, branch: 'main', ...(sha && { sha }) })
+    });
+    if (!res.ok) {
+        const err = await res.json();
+        if (res.status === 409) {
+            throw new Error(`Conflit (409) – ${path} a changé pendant l'envoi, relance le déploiement.`);
+        } else if (res.status === 403) {
+            throw new Error(`Accès interdit (403) – vérifiez les permissions du token pour ${path}.`);
+        } else {
+            throw new Error(`Erreur upload ${path} (${res.status}): ${err.message}`);
+        }
+    }
+}
+    async function enablePages(owner, repo, token) {
+        const url = `https://api.github.com/repos/${owner}/${repo}/pages`;
+        for (const branch of ['main', 'master']) {
+            const res = await fetch(url, {
+                method: 'POST', headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ source: { branch, path: '/' } })
+            });
+            if (res.status === 201 || res.status === 204 || res.status === 409) return true;
+            const err = await res.json();
+            if (err.message && err.message.includes('must be one of')) continue;
+            throw new Error(`Erreur activation Pages (${res.status}): ${err.message}`);
+        }
+        throw new Error("Impossible d'activer GitHub Pages – branches 'main' ou 'master' non trouvées.");
+    }
+    async function waitForSiteReady(url, maxAttempts = 35, interval = 2500) {
+        for (let i = 0; i < maxAttempts; i++) {
+            try {
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 5000);
+                const res = await fetch(url, { method: 'GET', signal: controller.signal });
+                clearTimeout(timeout);
+                if (res.status === 200) return true;
+            } catch(e) {}
+            await new Promise(r => setTimeout(r, interval));
+        }
+        return false;
+    }
+
+    function updateChecklist(step, status, message = '') {
+        if (!domElements.checklistContainer) return;
+        domElements.checklistContainer.style.display = 'block';
+        if (domElements.checklistContainer.children.length === 0) {
+            const steps = ['token','icons','repo','uploadIndex','uploadManifest','uploadSw','uploadIcons','pages','wait'];
+            steps.forEach(s => {
+                const div = document.createElement('div');
+                div.className = 'checklist-item pending';
+                div.id = `check-${s}`;
+                div.innerHTML = `<span class="status">⏳</span><span>${getStepLabel(s)}</span><span class="message" style="margin-left:auto; font-size:0.75rem;"></span>`;
+                domElements.checklistContainer.appendChild(div);
+            });
+        }
+        const item = document.getElementById(`check-${step}`);
+        if (item) {
+            item.className = `checklist-item ${status}`;
+            item.querySelector('.status').textContent = status === 'success' ? '✅' : (status === 'error' ? '❌' : '⏳');
+            if (message) item.querySelector('.message').textContent = message;
+        }
+    }
+    function getStepLabel(step) {
+        const labels = { token:'🔑 Vérification Token', icons:'🎨 Génération icônes', repo:'📁 Dépôt distant', uploadIndex:'📄 index.html', uploadManifest:'📄 manifest.json', uploadSw:'⚙️ sw.js', uploadIcons:'🖼️ Icônes', pages:'🌐 Activation Pages', wait:'⏳ Propagation DNS' };
+        return labels[step];
+    }
+    function resetChecklist() { if (domElements.checklistContainer) domElements.checklistContainer.innerHTML = ''; domElements.checklistContainer.style.display = 'none'; }
+    function strToBase64(str) { return btoa(unescape(encodeURIComponent(str))); }
+    function blobToBase64(blob) {
+        return new Promise(resolve => {
+            const r = new FileReader();
+            r.onloadend = () => resolve(r.result.split(',')[1]);
+            r.readAsDataURL(blob);
+        });
+    }
+    function showMessage(msg) { if (domElements.statusDiv) { domElements.statusDiv.innerHTML = msg; domElements.statusDiv.classList.remove('error'); } }
+    function showError(msg) { if (domElements.statusDiv) { domElements.statusDiv.innerHTML = `❌ ${msg}`; domElements.statusDiv.classList.add('error'); } }
+
+    if (domElements.deployBtn) {
+        domElements.deployBtn.onclick = async () => {
+            const token = domElements.tokenInput ? domElements.tokenInput.value.trim() : "";
+            const repo = domElements.repoInput ? domElements.repoInput.value.trim() : "";
+            const code = domElements.reactCode ? domElements.reactCode.value.trim() : "";
+            if (!token || !repo || !code || !uploadedImage) return showError("Token, dépôt, code et icône requis.");
+            domElements.deployBtn.disabled = true;
+            resetChecklist();
+            if (domElements.finalLinkContainer) domElements.finalLinkContainer.innerHTML = '';
+            showMessage("🚀 Déploiement...");
+            let siteUrl = '';
+            let deploySuccess = false;
+            try {
+                await ensureBabel();
+                updateChecklist('token','pending');
+                const owner = await getGitHubUser(token);
+                updateChecklist('token','success',`@${owner}`);
+                updateChecklist('icons','pending');
+                const iconsMap = await generateIcons(uploadedImage);
+                updateChecklist('icons','success',`${iconsMap.size} icônes`);
+                updateChecklist('repo','pending');
+                try {
+                    await createRepo(owner, repo, token);
+                    updateChecklist('repo','success','créé');
+                } catch(e) {
+                    if (e.message === 'EXISTS') {
+                        updateChecklist('repo','success','existant');
+                    } else {
+                        throw e;
+                    }
+                }
+                const finalIndex = generateIndexHtml(code, isSignatureEnabled);
+                const finalManifest = domElements.manifestPreview ? domElements.manifestPreview.value : "";
+                const finalSw = domElements.swPreview ? domElements.swPreview.value : "";
+                updateChecklist('uploadIndex','pending');
+                await uploadFile(owner, repo, "index.html", strToBase64(finalIndex), token, "Add index");
+                updateChecklist('uploadIndex','success');
+                updateChecklist('uploadManifest','pending');
+                await uploadFile(owner, repo, "manifest.json", strToBase64(finalManifest), token, "Add manifest");
+                updateChecklist('uploadManifest','success');
+                updateChecklist('uploadSw','pending');
+                await uploadFile(owner, repo, "sw.js", strToBase64(finalSw), token, "Add sw");
+                updateChecklist('uploadSw','success');
+                updateChecklist('uploadIcons','pending');
+                for (let [size, { blob, filename }] of iconsMap.entries()) {
+                    const b64 = await blobToBase64(blob);
+                    await uploadFile(owner, repo, `icons/${filename}`, b64, token, `Icon ${size}`);
+                }
+                updateChecklist('uploadIcons','success');
+                updateChecklist('pages','pending');
+                await enablePages(owner, repo, token);
+                updateChecklist('pages','success');
+                siteUrl = `https://${owner}.github.io/${repo}/`;
+                deploySuccess = true;
+            } catch (err) {
+                showError(`Erreur : ${err.message}`);
+                const pendingItems = document.querySelectorAll('.checklist-item.pending');
+                if (pendingItems.length > 0) {
+                    const lastPending = pendingItems[pendingItems.length - 1];
+                    const step = lastPending.id.replace('check-','');
+                    updateChecklist(step, 'error', err.message);
+                } else {
+                    showError(err.message);
+                }
+                domElements.deployBtn.disabled = false;
+                return;
+            }
+
+            const linkContainer = domElements.finalLinkContainer;
+            if (siteUrl) {
+                const btn = document.createElement('button');
+                btn.className = 'btn-link';
+                btn.textContent = '🌐 Voir le site';
+                btn.style.margin = '0.5rem';
+                btn.onclick = () => window.open(siteUrl, '_blank');
+                linkContainer.innerHTML = '';
+                linkContainer.appendChild(btn);
+                const waitMsg = document.createElement('div');
+                waitMsg.id = 'waitMessage';
+                waitMsg.style.fontSize = '0.85rem';
+                waitMsg.style.marginTop = '0.5rem';
+                waitMsg.style.color = 'var(--text-light)';
+                waitMsg.textContent = '⏳ Attente de la mise en ligne...';
+                linkContainer.appendChild(waitMsg);
+            }
+
+            updateChecklist('wait','pending');
+            showMessage("⏳ Attente déploiement...");
+            const ready = await waitForSiteReady(siteUrl, 40, 2500);
+            const waitMsgEl = document.getElementById('waitMessage');
+            if (ready) {
+                updateChecklist('wait','success','En ligne');
+                if (waitMsgEl) waitMsgEl.textContent = '✅ Site accessible !';
+                showMessage('✅ Déploiement terminé.');
+            } else {
+                updateChecklist('wait','error','Délai dépassé, mais le site est en cours de propagation');
+                if (waitMsgEl) waitMsgEl.textContent = '⏳ Le site n\'est pas encore prêt, réessayez dans quelques minutes.';
+                showMessage(`⚠️ Site pas encore prêt, mais accessible via le bouton.`);
+            }
+            domElements.deployBtn.disabled = false;
+        };
+    }
+
+    updateTokenButton();
+    syncOriginalContents();
+
+    // --- Bouton Copier la console ---
+    if (domElements.copyConsoleBtn) {
+        domElements.copyConsoleBtn.addEventListener('click', function() {
+            const statusText = domElements.statusDiv ? domElements.statusDiv.textContent : '';
+            if (!statusText) {
+                showError("Rien à copier.");
+                return;
+            }
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(statusText).then(() => {
+                    showMessage("✅ Contenu copié !");
+                }).catch(() => {
+                    fallbackCopy(statusText);
+                });
+            } else {
+                fallbackCopy(statusText);
+            }
+        });
+    }
+
+    function fallbackCopy(text) {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+            document.execCommand('copy');
+            showMessage("✅ Contenu copié !");
+        } catch (e) {
+            showError("Impossible de copier.");
+        }
+        document.body.removeChild(textarea);
+    }
+
+    // --- Effet LED globale au clic ---
+    const globalLed = document.getElementById('globalLed');
+    function flashLed() {
+        if (!globalLed) return;
+        globalLed.classList.add('active');
+        clearTimeout(globalLed._timer);
+        globalLed._timer = setTimeout(() => {
+            globalLed.classList.remove('active');
+        }, 200);
+    }
+
+    // --- Effet visuel + son + LED pour tous les boutons ---
+    function playClickSound() {
+        try {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+            oscillator.start(audioCtx.currentTime);
+            oscillator.stop(audioCtx.currentTime + 0.05);
+        } catch (e) { /* silencieux */ }
+    }
+
+    const interactiveSelectors = '.square-btn, .dot-button, .token-paste-btn, #deployBtn, .dark-toggle, .btn-link, .internal-fullscreen-btn, #globalExitFullscreen, .modal-actions button, #modalSaveBtn, #modalCancelBtn, #copyConsoleBtn';
+    document.addEventListener('click', function(e) {
+        const target = e.target.closest(interactiveSelectors);
+        if (target) {
+            target.classList.add('click-effect');
+            setTimeout(() => target.classList.remove('click-effect'), 150);
+            playClickSound();
+            flashLed();
+        }
+    });
+function parseReactBlocks(source) {
+    const ast = Babel.packages.parser.parse(source, {
+        sourceType: 'module',
+        plugins: ['jsx', 'typescript']
+    });
+    const blocks = [];
+    let previousEnd = 0;
+
+    for (const node of ast.program.body) {
+        let start = node.start;
+        const comments = (node.leadingComments || []).filter(c =>
+            c.start >= previousEnd &&
+            !/@SUPPRIMER/.test(c.value) &&
+            (previousEnd === 0 || source.slice(previousEnd, c.start).includes('\n'))
+        );
+        if (comments.length) start = comments[0].start;
+
+        blocks.push({
+            name: getReactBlockName(node),
+            start,
+            nodeStart: node.start,
+            end: node.end,
+            code: source.slice(start, node.end)
+        });
+        previousEnd = node.end;
+    }
+    return { blocks, comments: ast.comments || [] };
+}
+function getReactBlockName(node) {
+    if (node.type === 'ExportNamedDeclaration' || node.type === 'ExportDefaultDeclaration') {
+        const inner = node.declaration;
+        return inner && inner.type !== 'Identifier' ? getReactBlockName(inner) : null;
+    }
+    if (node.type === 'VariableDeclaration') {
+        const ids = node.declarations.map(d => Object.keys(Babel.packages.types.getBindingIdentifiers(d.id)));
+        return ids.flat().join(', ') || null;
+    }
+    if (node.id) return node.id.name || node.id.value || null;
+    if (node.type === 'ExpressionStatement' && node.expression.type === 'AssignmentExpression') {
+        const left = node.expression.left;
+        if (left.type === 'MemberExpression' && !left.computed && left.object.name) {
+            return `${left.object.name}.${left.property.name}`;
+        }
+    }
+    return null;
+}
+function extractAiCode(answer) {
+    const fences = [...answer.matchAll(/^[ \t]*(`{3,})[^\n]*\n([\s\S]*?)\n[ \t]*\1[ \t]*$/gm)];
+    const rest = fences.reduce((text, m) => text.replace(m[0], ''), answer);
+    if (/^[ \t]*`{3,}/m.test(rest)) {
+        throw new Error("Réponse coupée : un bloc de code n'est pas fermé. Redemande la réponse entière.");
+    }
+    return fences.length ? fences.map(m => m[2]).join('\n\n') : answer.trim();
+}
+function buildReactUpdate(source, answer) {
+    const code = extractAiCode(answer.replace(/\r\n/g, '\n'));
+    if (/^\s*(\/\/|\{?\/\*)\s*(\.\.\.|…)|reste (du code )?inchangé/im.test(code)) {
+        throw new Error("Réponse abrégée (code omis). Demande les blocs complets.");
+    }
+
+    const ops = splitReactOps(code);
+    if (!ops.length) throw new Error("Aucun bloc trouvé dans la réponse.");
+
+    // Tout ou rien : on travaille sur une copie, rendue seulement si tout réussit
+    const result = { code: source, added: [], modified: [], removed: [] };
+    for (const op of ops) {
+        try {
+            applyReactOp(result, op);
+        } catch (err) {
+            throw new Error(`${op.action} ${op.address || ''} : ${err.message}`);
+        }
+    }
+
+    result.code = result.code.trim();
+    if (result.code === source.trim()) throw new Error("Aucun changement détecté dans la réponse.");
+
+    Babel.transform(result.code, {
+        filename: 'component.tsx',
+        presets: [['react', { runtime: 'classic' }], 'typescript']
+    });
+
+    return result;
+}
+function splitReactOps(code) {
+    const directive = /^\s*(?:\{\s*\/\*|\/\/)\s*@(REMPLACER|AJOUTER APRES|AJOUTER AVANT|AJOUTER DANS|SUPPRIMER)\s+([\w$.#-]+)\s*(?:\*\/\s*\})?\s*$/;
+    const oneLine = /^\s*(?:\{\s*\/\*|\/\/)\s*@(CLASSES|TEXTE)\s+([\w$.#-]+)\s+:\s+(.*?)\s*(?:\*\/\s*\})?\s*$/;
+    const ops = [];
+    let current = { action: 'BLOCS', address: null, lines: [] };
+
+    const close = () => {
+        const text = current.lines.join('\n').replace(/^\s*\n/, '').trimEnd();
+        if (current.action !== 'BLOCS' || text.trim()) {
+            ops.push({ action: current.action, address: current.address, text });
+        }
+    };
+
+    for (const line of code.split('\n')) {
+        const short = line.match(oneLine);
+        if (short) {
+            close();
+            ops.push({ action: short[1], address: short[2], text: short[3] });
+            current = { action: 'BLOCS', address: null, lines: [] };
+            continue;
+        }
+        const match = line.match(directive);
+        if (!match) {
+            if (/^\s*\/\/\s*@(REMPLACER|AJOUTER|SUPPRIMER|CLASSES|TEXTE)/.test(line)) throw new Error(`Ordre illisible : ${line.trim()}`);
+            current.lines.push(line);
+            continue;
+        }
+        close();
+        current = { action: match[1], address: match[2], lines: [] };
+        if (match[1] === 'SUPPRIMER') {
+            ops.push({ action: 'SUPPRIMER', address: match[2], text: '' });
+            current = { action: 'BLOCS', address: null, lines: [] };
+        }
+    }
+    close();
+    return ops;
+}
+function walkReactAst(node, visit, parent = null) {
+    if (!node || typeof node.type !== 'string') return;
+    visit(node, parent);
+    for (const key of Object.keys(node)) {
+        if (/comments$/i.test(key)) continue;
+        const value = node[key];
+        if (Array.isArray(value)) value.forEach(child => walkReactAst(child, visit, node));
+        else if (value && typeof value.type === 'string') walkReactAst(value, visit, node);
+    }
+}
+function getZoneName(node) {
+    if (node.type !== 'JSXElement') return null;
+    const attr = node.openingElement.attributes.find(a => a.name && a.name.name === 'data-bloc');
+    return attr && attr.value && typeof attr.value.value === 'string' ? attr.value.value : null;
+}
+function getReactMembers(node) {
+    if (!node) return [];
+    if (node.type === 'ExportNamedDeclaration' || node.type === 'ExportDefaultDeclaration') return getReactMembers(node.declaration);
+    if (node.type === 'VariableDeclaration') return getReactMembers(node.declarations[0].init);
+    if (node.type === 'ClassDeclaration') return node.body.body;
+    if (node.type === 'CallExpression') return getReactMembers(node.arguments[0]);
+    if (node.type === 'ClassMethod' || node.type === 'FunctionDeclaration' ||
+        node.type === 'FunctionExpression' || node.type === 'ArrowFunctionExpression') {
+        return node.body.type === 'BlockStatement' ? node.body.body : [];
+    }
+    return [];
+}
+function getMemberNames(node) {
+    if (node.key) return [node.key.name || node.key.value];
+
+    // Un effet nommé : useEffect(function nom() { ... }, [])
+    const call = node.type === 'ExpressionStatement' ? node.expression : null;
+    if (call && call.type === 'CallExpression' && /Effect$/.test(call.callee.name || call.callee.property?.name || '')) {
+        const effect = call.arguments[0];
+        return effect && effect.id ? [effect.id.name] : [];
+    }
+
+    const name = getReactBlockName(node);
+    return name ? name.split(', ') : [];
+}
+function findReactTarget(source, address) {
+    const { blocks } = parseReactBlocks(source);
+    const ast = Babel.packages.parser.parse(source, { sourceType: 'module', plugins: ['jsx', 'typescript'] });
+    const single = (list, label) => {
+        if (!list.length) throw new Error(`« ${label} » introuvable.`);
+        if (list.length > 1) throw new Error(`« ${label} » désigne plusieurs endroits.`);
+        return list[0];
+    };
+
+    const exact = blocks.filter(b => b.name === address);
+    if (exact.length) return { type: 'block', ...single(exact, address) };
+
+    const [path, zone] = address.split('#');
+    const [rootName, ...inner] = path.split('.');
+    const root = single(blocks.filter(b => b.name === rootName), rootName);
+    let node = ast.program.body.find(n => n.start === root.nodeStart);
+
+    for (const name of inner) {
+        node = single(getReactMembers(node).filter(n => getMemberNames(n).includes(name)), name);
+    }
+
+    if (zone === undefined) {
+        if (!inner.length) return { type: 'block', ...root };
+        return { type: 'member', start: node.start, end: node.end };
+    }
+
+    const found = [];
+    walkReactAst(node, (child, parent) => {
+        if (getZoneName(child) === zone) found.push({ node: child, parent });
+    });
+    const match = single(found, `#${zone}`);
+    return {
+        type: 'zone',
+        zone,
+        start: match.node.start,
+        end: match.node.end,
+        element: match.node,
+        inJsx: /^JSX(Element|Fragment)$/.test(match.parent.type)
+    };
+}
+function indentReactCode(text, indent) {
+    // Les chaînes multilignes ne doivent pas être décalées
+    if (text.includes('`')) return text.trim();
+    const lines = text.split('\n');
+    const widths = lines.slice(1).filter(l => l.trim()).map(l => l.match(/^\s*/)[0].length);
+    const common = widths.length ? Math.min(...widths) : 0;
+    return lines
+        .map((line, i) => (i === 0 ? line.trimStart() : (line.trim() ? indent + line.slice(common) : '')))
+        .join('\n');
+}
+function spliceReactCode(source, start, end, text) {
+    return source.slice(0, start) + text + source.slice(end);
+}
+function upsertReactBlocks(result, text) {
+    const incoming = parseReactBlocks(text).blocks;
+    if (!incoming.length) throw new Error("aucune déclaration dans ce passage.");
+
+    for (const block of incoming) {
+        if (!block.name) throw new Error(`instruction sans nom : ${block.code.slice(0, 60)}`);
+        const matches = parseReactBlocks(result.code).blocks.filter(b => b.name === block.name);
+        if (matches.length > 1) throw new Error(`nom ambigu : « ${block.name} ».`);
+
+        if (matches.length) {
+            // Sans commentaire dans la réponse, on garde celui qui existe déjà
+            const old = matches[0];
+            const start = block.start === block.nodeStart ? old.nodeStart : old.start;
+            if (result.code.slice(start, old.end) === block.code) continue;
+            result.code = spliceReactCode(result.code, start, old.end, block.code);
+            result.modified.push(block.name);
+        } else {
+            const app = parseReactBlocks(result.code).blocks.find(b => b.name === 'App');
+            result.code = app
+                ? spliceReactCode(result.code, app.start, app.start, `${block.code}\n\n`)
+                : `${result.code.trimEnd()}\n\n${block.code}`.trimStart();
+            result.added.push(block.name);
+        }
+    }
+}
+function checkReplacement(target, address, text) {
+    if (target.type === 'zone') {
+        let element = null;
+        try {
+            element = Babel.packages.parser.parseExpression(text.trim(), { plugins: ['jsx', 'typescript'] });
+        } catch (err) {
+            throw new Error("le remplacement doit être un seul élément JSX.");
+        }
+        if (!/^JSX(Element|Fragment)$/.test(element.type)) {
+            throw new Error("après un ordre sur une zone, envoie uniquement du JSX ; un nouveau composant va dans un @AJOUTER AVANT à part.");
+        }
+        if (getZoneName(element) !== target.zone) throw new Error(`l'élément doit garder data-bloc="${target.zone}".`);
+
+        // <span data-bloc="x"> devenu <div data-bloc="x"><span/></div> : le nom a changé d'élément
+        const oldTag = target.element.openingElement?.name.name;
+        const newTag = element.openingElement?.name.name;
+        let wrapped = false;
+        if (oldTag && newTag && oldTag !== newTag) {
+            walkReactAst(element, node => {
+                if (node !== element && node.type === 'JSXElement' && node.openingElement.name.name === oldTag) wrapped = true;
+            });
+        }
+        if (wrapped) {
+            throw new Error(`data-bloc="${target.zone}" doit rester sur la balise <${oldTag}> : pour l'envelopper, remplace la zone du conteneur parent.`);
+        }
+        return;
+    }
+    const name = address.split('.').pop();
+    const declares = new RegExp(`(const|let|var|function|class|type|interface|enum)\\b[^=({]*[\\[{]?[^=]*\\b${name.replace(/\$/g, '\\$')}\\b|^\\s*(async\\s+|static\\s+)?${name.replace(/\$/g, '\\$')}\\s*[(=]`, 'm');
+    if (target.type === 'member' && !declares.test(text)) throw new Error(`le code fourni ne déclare pas « ${name} ».`);
+}
+function applyReactOp(result, op) {
+    if (op.action === 'BLOCS') return upsertReactBlocks(result, op.text);
+    if (op.action === 'CLASSES') return applyReactClasses(result, op);
+    if (op.action === 'TEXTE') return applyReactText(result, op);
+    if (op.action !== 'SUPPRIMER' && !op.text.trim()) throw new Error("aucun code fourni.");
+
+    // Supprimer un bloc déjà absent ne bloque pas le reste
+    if (op.action === 'SUPPRIMER' && !/[.#]/.test(op.address) &&
+        !parseReactBlocks(result.code).blocks.some(b => b.name === op.address)) {
+        result.removed.push(`${op.address} (déjà absent)`);
+        return;
+    }
+
+    const source = result.code;
+    const target = findReactTarget(source, op.address);
+    const indent = source.slice(source.lastIndexOf('\n', target.start - 1) + 1, target.start).match(/^\s*/)[0];
+    const text = indentReactCode(op.text, indent);
+
+    if (op.action === 'REMPLACER') {
+        if (target.type === 'block') {
+            const names = parseReactBlocks(op.text).blocks.map(b => b.name);
+            if (!names.includes(op.address)) throw new Error(`le code fourni ne déclare pas « ${op.address} ».`);
+            return upsertReactBlocks(result, op.text);
+        }
+        checkReplacement(target, op.address, op.text);
+        result.code = spliceReactCode(source, target.start, target.end, text);
+        result.modified.push(op.address);
+    } else if (op.action === 'SUPPRIMER') {
+        if (target.type === 'zone' && !target.inJsx) {
+            throw new Error("cette zone ne peut pas être supprimée seule, remplace le bloc qui la contient.");
+        }
+        const lineStart = source.lastIndexOf('\n', target.start - 1) + 1;
+        const start = source.slice(lineStart, target.start).trim() ? target.start : lineStart;
+        const end = target.end + source.slice(target.end).match(/^[ \t]*\n?/)[0].length;
+        result.code = spliceReactCode(source, start, end, '');
+        result.removed.push(op.address);
+    } else if (op.action === 'AJOUTER DANS') {
+        if (target.type === 'zone') {
+            const closing = target.element.closingElement;
+            if (!closing) throw new Error("cet élément ne peut rien contenir.");
+            const added = indentReactCode(op.text, `${indent}  `);
+            result.code = spliceReactCode(source, closing.start, closing.start, `  ${added}\n${indent}`);
+        } else {
+            const ast = Babel.packages.parser.parse(source, { sourceType: 'module', plugins: ['jsx', 'typescript'] });
+            let found = null;
+            walkReactAst(ast.program, node => {
+                if (node.start === target.nodeStart || node.start === target.start) found = found || node;
+            });
+            const members = getReactMembers(found);
+            const last = members.find(n => n.type === 'ReturnStatement');
+            if (!last) throw new Error("« AJOUTER DANS » demande une fonction avec un return, ou une zone.");
+            const spacing = source.slice(source.lastIndexOf('\n', last.start - 1) + 1, last.start);
+            result.code = spliceReactCode(source, last.start, last.start, `${indentReactCode(op.text, spacing)}\n\n${spacing}`);
+        }
+        result.added.push(`dans ${op.address}`);
+    } else {
+        if (target.type === 'zone' && !target.inJsx) {
+            throw new Error("impossible d'ajouter à côté de cette zone, remplace le bloc qui la contient.");
+        }
+        const after = op.action === 'AJOUTER APRES';
+        const position = after ? target.end : target.start;
+        const gap = target.type === 'block' ? '\n\n' : `\n${indent}`;
+        result.code = spliceReactCode(source, position, position, after ? gap + text : text + gap);
+        result.added.push(`${after ? 'après' : 'avant'} ${op.address}`);
+    }
+
+    // Vérifie que le code reste lisible après chaque pierre posée
+    parseReactBlocks(result.code);
+}
+function applyReactClasses(result, op) {
+    const changes = op.text.split(/\s+/).filter(Boolean);
+    if (!changes.length || changes.some(c => !/^[+-]./.test(c))) {
+        throw new Error("écris chaque classe avec + (ajouter) ou - (retirer).");
+    }
+
+    for (let i = 0; i < changes.length; i++) {
+        const change = changes[i];
+        const sign = change[0];
+        const name = change.slice(1);
+        const target = findReactTarget(result.code, op.address);
+        if (target.type !== 'zone') throw new Error("l'adresse doit désigner une zone (Nom#zone).");
+
+        const opening = target.element.openingElement;
+        const attr = opening.attributes.find(a => a.name && a.name.name === 'className');
+        if (!attr) {
+            if (sign === '-') throw new Error(`la classe « ${name} » est absente.`);
+            result.code = spliceReactCode(result.code, opening.name.end, opening.name.end, ` className="${name}"`);
+            continue;
+        }
+
+        // Tous les textes qui composent className, même conditionnels
+        const parts = [];
+        walkReactAst(attr.value, node => {
+            if (node.type === 'StringLiteral') parts.push({ start: node.start + 1, end: node.end - 1 });
+            if (node.type === 'TemplateElement') parts.push({ start: node.start, end: node.end });
+        });
+
+        const hits = [];
+        for (const part of parts) {
+            const words = result.code.slice(part.start, part.end).matchAll(/\S+/g);
+            for (const word of words) {
+                if (word[0] === name) hits.push(part.start + word.index);
+            }
+        }
+
+        if (sign === '-') {
+            if (hits.length !== 1) {
+                throw new Error(`la classe « ${name} » est ${hits.length ? 'présente plusieurs fois' : 'absente'}.`);
+            }
+            let start = hits[0];
+            // « -ancienne +nouvelle » : échange sur place, la condition est gardée
+            const next = changes[i + 1];
+            if (next && next[0] === '+') {
+                result.code = spliceReactCode(result.code, start, start + name.length, next.slice(1));
+                i++;
+                continue;
+            }
+            let end = start + name.length;
+            if (result.code[end] === ' ') end++;
+            else if (result.code[start - 1] === ' ') start--;
+            result.code = spliceReactCode(result.code, start, end, '');
+        } else if (!hits.length) {
+            const value = attr.value;
+            const expression = value.type === 'JSXExpressionContainer' ? value.expression : value;
+            if (expression.type !== 'StringLiteral' && expression.type !== 'TemplateLiteral') {
+                throw new Error("className calculé : remplace la zone entière.");
+            }
+            const position = expression.start + 1;
+            const space = /["'`]/.test(result.code[position]) ? '' : ' ';
+            result.code = spliceReactCode(result.code, position, position, name + space);
+        }
+    }
+    result.modified.push(`classes ${op.address}`);
+}
+// Défauts qui empêchent les retouches chirurgicales ou cassent le style
+function findCodeFlaws(source) {
+    if (!source.trim()) return [];
+    const ast = Babel.packages.parser.parse(source, { sourceType: 'module', plugins: ['jsx', 'typescript'] });
+    const flaws = [];
+    const declared = new Set(['React', 'ReactDOM']);
+    walkReactAst(ast.program, node => {
+        if (node.type === 'Identifier') declared.add(node.name);
+    });
+    ast.program.body.forEach(node => {
+        const name = getReactBlockName(node) || 'le code';
+        const zones = new Set();
+        if (/^(Import|Export)/.test(node.type)) {
+            flaws.push(`${name} : pas d'import ni d'export, React est déjà disponible`);
+        }
+        walkReactAst(node, child => {
+            const zone = getZoneName(child);
+            if (zone && zones.has(zone)) {
+                flaws.push(`${name} : data-bloc="${zone}" utilisé deux fois, chaque nom doit être unique`);
+            }
+            if (zone) zones.add(zone);
+
+            const callee = child.type === 'CallExpression' ? child.callee : null;
+            if (callee && (callee.name === 'createRoot' ||
+                (callee.object?.name === 'ReactDOM' && /^(render|createRoot)$/.test(callee.property.name)))) {
+                flaws.push(`${name} : n'écris pas createRoot ni ReactDOM.render, Reactor affiche App`);
+            }
+
+            const property = child.type === 'MemberExpression' ? child.property.name : '';
+            const onPage = /^document\.(body|documentElement)$/.test(source.slice(child.object?.start, child.object?.end));
+            if (/^(querySelector(All)?|getElementById|getElementsBy\w+)$/.test(property) || (property === 'classList' && !onPage)) {
+                flaws.push(`${name} : ne manipule pas la page directement (${property}), change l'affichage avec un état React`);
+            }
+
+            if (child.type === 'JSXOpeningElement') {
+                let tag = child.name;
+                const member = tag.type === 'JSXMemberExpression';
+                while (tag.object) tag = tag.object;
+                if (tag.type === 'JSXIdentifier' && (member || /^[A-Z]/.test(tag.name)) && !declared.has(tag.name)) {
+                    flaws.push(`${name} : <${tag.name}> est utilisé mais n'existe pas dans le code`);
+                }
+            }
+
+            if (child.type !== 'JSXAttribute') return;
+            if (child.name.name === 'data-bloc' && child.value?.type !== 'StringLiteral') {
+                flaws.push(`${name} : data-bloc calculé, écris un nom en texte fixe`);
+            }
+            if (child.name.name !== 'className' || !child.value) return;
+
+            walkReactAst(child.value, template => {
+                if (template.type !== 'TemplateLiteral') return;
+                // `${a}${condition ? 'x' : 'y'}` : « x » se colle à la classe précédente
+                for (let i = 1; i < template.expressions.length; i++) {
+                    if (template.quasis[i].value.raw !== '') continue;
+                    const strings = [];
+                    walkReactAst(template.expressions[i], part => {
+                        if (part.type === 'StringLiteral' && part.value) strings.push(part.value);
+                    });
+                    const before = [];
+                    walkReactAst(template.expressions[i - 1], part => {
+                        if (part.type === 'StringLiteral' && part.value) before.push(part.value);
+                    });
+                    const spaced = before.length && before.every(text => text.endsWith(' '));
+                    if (!spaced && strings.some(text => !text.startsWith(' '))) {
+                        flaws.push(`${name} : classes collées dans className, ajoute une espace entre les deux \${...}`);
+                    }
+                }
+            });
+        });
+    });
+    findUnusedComponents(ast.program).forEach(name => {
+        flaws.push(`${name} : ce composant n'est plus utilisé, supprime-le avec // @SUPPRIMER ${name} (ou continue à l'utiliser)`);
+    });
+    return flaws;
+}
+// Composants que rien n'affiche : la recherche part d'App et suit chaque usage
+function findUnusedComponents(program) {
+    const components = new Map();
+    const reached = [];
+    program.body.forEach(node => {
+        const declaration = node.declarations?.[0];
+        const name = node.id?.name || declaration?.id.name;
+        const isFunction = /^(FunctionDeclaration|ClassDeclaration)$/.test(node.type)
+            || /^(ArrowFunctionExpression|FunctionExpression|CallExpression)$/.test(declaration?.init?.type);
+        if (isFunction && name !== 'App' && /^[A-Z].*[a-z]/.test(name)) components.set(name, node);
+        else reached.push(node);
+    });
+    // La liste « reached » s'allonge pendant son parcours
+    for (let i = 0; i < reached.length; i++) {
+        walkReactAst(reached[i], child => {
+            if (child.type !== 'Identifier' && child.type !== 'JSXIdentifier') return;
+            const used = components.get(child.name);
+            if (used && !reached.includes(used)) reached.push(used);
+        });
+    }
+    return [...components.keys()].filter(name => !reached.includes(components.get(name)));
+}
+// Seuls les défauts ajoutés sont refusés : l'ancien code reste modifiable
+function checkNewFlaws(before, after) {
+    const known = findCodeFlaws(before);
+    const added = findCodeFlaws(after).filter(flaw => {
+        const index = known.indexOf(flaw);
+        if (index === -1) return true;
+        known.splice(index, 1);
+        return false;
+    });
+    if (added.length) throw new Error([...new Set(added)].join(' ; '));
+}
+// Les balises HTML du code, dans un ordre stable : leur rang sert d'identifiant
+function listHostElements(source) {
+    const ast = Babel.packages.parser.parse(source, { sourceType: 'module', plugins: ['jsx', 'typescript'] });
+    const elements = [];
+    ast.program.body.forEach(node => {
+        const blockName = getReactBlockName(node);
+        if (!blockName) return;
+        const component = blockName.split(', ')[0];
+        walkReactAst(node, child => {
+            if (child.type !== 'JSXElement') return;
+            const tag = child.openingElement.name;
+            if (tag.type !== 'JSXIdentifier' || !/^[a-z]/.test(tag.name)) return;
+            elements.push({ node: child, root: node, component, tag });
+        });
+    });
+    return elements;
+}
+function applyReactText(result, op) {
+    const target = findReactTarget(result.code, op.address);
+    if (target.type !== 'zone') throw new Error("l'adresse doit désigner une zone (Nom#zone).");
+
+    const children = target.element.children;
+    if (children.length !== 1 || children[0].type !== 'JSXText') {
+        throw new Error("cette zone ne contient pas qu'un texte simple : remplace la zone entière.");
+    }
+
+    const child = children[0];
+    const old = result.code.slice(child.start, child.end);
+    const before = old.match(/^\s*/)[0];
+    const after = old.match(/\s*$/)[0];
+    const text = /[{}<>&]/.test(op.text) ? `{${JSON.stringify(op.text)}}` : op.text;
+    result.code = spliceReactCode(result.code, child.start, child.end, before + text + after);
+    result.modified.push(`texte ${op.address}`);
+}
+function listReactBlocks(source) {
+    const ast = Babel.packages.parser.parse(source, { sourceType: 'module', plugins: ['jsx', 'typescript'] });
+    const lines = [];
+
+    parseReactBlocks(source).blocks.forEach((block, i) => {
+        const name = block.name || '(sans nom)';
+        lines.push(`${name} · ${block.code.split('\n').length} l.`);
+        for (const member of getReactMembers(ast.program.body[i])) {
+            for (const inner of getMemberNames(member)) lines.push(`  ${name}.${inner}`);
+        }
+        walkReactAst(ast.program.body[i], node => {
+            const zone = getZoneName(node);
+            if (zone) lines.push(`  ${name}#${zone}`);
+        });
+    });
+    return lines.join('\n');
+}
+async function refreshReactIndex() {
+    const output = document.getElementById('reactIndex');
+    try {
+        await ensureBabel();
+        output.textContent = listReactBlocks(domElements.reactCode.value) || "Aucun bloc.";
+    } catch (err) {
+        output.textContent = `❌ ${err.message}`;
+    }
+}
+async function copyReactIndex() {
+    try {
+        await ensureBabel();
+        const index = listReactBlocks(domElements.reactCode.value);
+        if (!index) return showError("Aucun bloc.");
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(index);
+            showMessage("✅ Index copié.");
+        } else {
+            fallbackCopy(index);
+        }
+    } catch (err) {
+        showError(`Index impossible : ${err.message}`);
+    }
+}
+let pendingReactUpdate = null;
+function resetReactUpdate() {
+    pendingReactUpdate = null;
+    document.getElementById('applyBlocksBtn').disabled = true;
+    document.getElementById('blocksReport').textContent = '';
+}
+async function analyzeAiResponse() {
+    resetReactUpdate();
+    const report = document.getElementById('blocksReport');
+    const source = domElements.reactCode.value.replace(/\r\n/g, '\n');
+    const answer = document.getElementById('aiResponse').value;
+    if (!answer.trim()) return showError("Colle d'abord la réponse de l'IA.");
+    try {
+        await ensureBabel();
+        const update = buildReactUpdate(source, answer);
+        checkNewFlaws(source, update.code);
+        pendingReactUpdate = { ...update, source: domElements.reactCode.value };
+        const lines = [
+            ...update.added.map(n => `➕ Ajouté : ${n}`),
+            ...update.modified.map(n => `✏️ Modifié : ${n}`),
+            ...update.removed.map(n => `🗑️ Supprimé : ${n}`)
+        ];
+        report.textContent = lines.join('\n');
+        document.getElementById('applyBlocksBtn').disabled = false;
+        showMessage("✅ Réponse valide, prête à appliquer.");
+    } catch (err) {
+        report.textContent = `❌ ${err.message}`;
+        showError("Réponse refusée, code inchangé.");
+    }
+}
+async function applyAiResponse() {
+    if (!pendingReactUpdate) return;
+    if (pendingReactUpdate.source !== domElements.reactCode.value) {
+        resetReactUpdate();
+        return showError("Le code a changé : relance l'analyse.");
+    }
+    const before = domElements.reactCode.value;
+    // Lus avant la remise à zéro : ils servent à nommer la version
+    const answer = document.getElementById('aiResponse').value;
+    const summary = document.getElementById('blocksReport').textContent;
+
+    localStorage.setItem('lb-reactor-previous', before);
+    domElements.reactCode.value = pendingReactUpdate.code;
+    localStorage.setItem('lb-reaactor-code', pendingReactUpdate.code);
+    recordVersion(before, domElements.reactCode.value, describeChange(answer, summary));
+    freshCode = domElements.reactCode.value;
+    lastApplied = { answer: answer.trim(), code: freshCode };
+    document.getElementById('aiResponse').value = '';
+    resetReactUpdate();
+    await runInPreview();
+    await refreshReactIndex();
+}
+const CODE_FENCE = '`'.repeat(4);
+const REACT_PROMPT = [
+    "⚙️ PROTOCOLE LB REACTOR : CHIRURGIE REACT",
+    "",
+    "Nous travaillons dans cette conversation sur une application React en un seul fichier, qui peut grandir. Je ne code pas : je te décris ce que je veux avec mes mots, tu prends seul les décisions techniques, puis je colle ta réponse dans mon outil, qui l'applique automatiquement.",
+    "",
+    "RÈGLES DE CODE",
+    "1. Un seul fichier React (JSX/TSX). Aucun import, aucun export.",
+    "2. React et ReactDOM sont globaux. Les hooks (useState, useEffect, useCallback, etc.) sont déjà disponibles : ne les déclare pas. Pour le reste, écris React.xxx.",
+    "3. Le composant racine est toujours function App(). N'écris jamais ReactDOM.render ni createRoot.",
+    "4. Découpe en composants courts et spécialisés (environ 80 lignes au maximum). N'écris aucun composant ni fonction que tu n'utilises pas : quand tu retires le dernier usage d'un composant, supprime-le avec @SUPPRIMER.",
+    "5. Aucune instruction isolée au premier niveau : place les effets dans useEffect, toujours avec une fonction nommée et unique dans son composant : useEffect(function sauvegarder() { ... }, []). Ne manipule jamais la page directement (classList, querySelector, getElementById) : tout changement d'affichage passe par un état React, placé dans le composant qui possède ce qui change.",
+    "6. Mobile-first avec Tailwind ; composant racine en w-full, m-0, p-0, sans w-screen ni max-w-*.",
+    "7. Pose un attribut data-bloc=\"nom-court\" sur chaque élément visible que je pourrais vouloir retoucher : conteneurs, boutons, textes, icônes. Nom unique dans son composant, toujours en texte fixe : un data-bloc calculé est refusé, même dans une liste (l'élément répété garde un seul nom). Dans className, laisse toujours une espace entre deux parties : `${a} ${b}`.",
+    "",
+    "ADRESSES",
+    "- Nom : un composant, hook, fonction, constante ou type de premier niveau.",
+    "- Nom.interne : une fonction, un état ou un effet nommé, directement dans Nom.",
+    "- Nom#zone : l'élément JSX de Nom qui porte data-bloc=\"zone\".",
+    "",
+    "ORDRES (chacun seul sur sa ligne, suivi de son code)",
+    "// @REMPLACER adresse",
+    "// @AJOUTER APRES adresse",
+    "// @AJOUTER AVANT adresse",
+    "// @AJOUTER DANS adresse (fin d'une zone, ou juste avant le return d'une fonction)",
+    "// @SUPPRIMER adresse (sans code)",
+    "// @CLASSES Nom#zone : -classe-retirée +classe-ajoutée (une seule ligne)",
+    "// @TEXTE Nom#zone : nouveau texte (une seule ligne, zone ne contenant qu'un texte simple)",
+    "",
+    "RÈGLES DE RÉPONSE (strictes)",
+    "8. Toute ta réponse contient UN SEUL bloc de code, clôturé par 4 backticks, avec tous les ordres à la suite et aucune explication à l'intérieur.",
+    "9. PREMIÈRE CRÉATION : envoie le code complet, avec function App(), sans aucun ordre @. ENSUITE : chaque morceau de code est précédé de son ordre.",
+    "10. Choisis TOUJOURS la plus petite retouche qui suffit : couleur, taille ou espacement avec @CLASSES ; libellé avec @TEXTE ; logique avec Nom.interne ; structure avec Nom#zone. Un composant entier seulement en dernier recours.",
+    "   Une couleur conditionnelle se change aussi avec @CLASSES, en écrivant côte à côte -ancienne +nouvelle. Une valeur venant d'une donnée (liste, constante) se change dans la donnée.",
+    "   « Taille » veut dire hauteur ET largeur. Pour une proportion (moitié, double), calcule la taille réelle en pixels (marges internes + texte) : diviser une classe par deux ne suffit pas.",
+    "   Si mon message commence par « Dans Nom#zone », vise exactement cette adresse : l'élément que je joins est celui que je veux retoucher.",
+    "   Pour ajouter un élément à côté d'un autre : @AJOUTER APRES ou AVANT. Si le conteneur les aligne en ligne et que je le veux dessous, remplace la zone du conteneur parent. Ne déplace jamais un data-bloc vers une nouvelle enveloppe.",
+    "   Si je précise qu'un élément est affiché plusieurs fois, ne modifie que celui que je désigne (distingue-le par les données ou les props), sauf si je dis « tous ».",
+    "11. Un remplacement est COMPLET : jamais de points de suspension, de « reste inchangé » ni de code abrégé.",
+    "12. Une zone remplacée est un seul élément JSX qui garde le même data-bloc. Après un ordre sur une zone, envoie uniquement du JSX : un nouveau composant va dans un @AJOUTER AVANT à part.",
+    "13. Ne renomme rien et ne change rien d'autre que ce que je demande, ni couleur ni comportement. Un composant réutilisé reste réutilisé : ne recopie jamais son contenu à la place de ses appels, distingue les cas par les props.",
+    "14. Pars toujours de la dernière version du code (ta dernière réponse ou ma dernière mise à jour). Les ordres sont appliqués dans l'ordre, et tous ou aucun.",
+    "15. Hors du bloc de code : une seule phrase simple, puis « Affirmatif. »",
+    "16. Si ma demande est ambiguë, pose une question courte et simple, sans code. Exemple : « le fond » peut être celui d'un bouton, d'une carte ou de l'écran : demande lequel.",
+    "17. Un message « ⚠️ LB REACTOR » annonce un refus ou une annulation : ton dernier changement n'est PAS dans mon code. Fais ce que le message demande. En corrigeant, garde le même comportement que celui que tu avais annoncé.",
+    "",
+    "Il n'y a pas encore de code. Réponds simplement « Prêt », puis attends que je te décrive l'application."
+].join('\n');
+async function copyTextToClipboard(text, message) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        try {
+            await navigator.clipboard.writeText(text);
+            showMessage(message);
+            return;
+        } catch (err) {
+            console.warn(err);
+        }
+    }
+    fallbackCopy(text);
+}
+function buildStartContext(source) {
+    const code = `${CODE_FENCE}tsx\n${source.trim()}\n${CODE_FENCE}`;
+    return `${REACT_PROMPT.split('\n').slice(0, -1).join('\n')}\n\nL'application existe déjà. Voici son code actuel :\n\n${code}\n\nRéponds simplement « Prêt », puis attends ma demande.`;
+}
+async function pasteAndApply() {
+    const field = document.getElementById('aiResponse');
+    const report = document.getElementById('blocksReport');
+    resetReactUpdate();
+
+    if (!field.value.trim()) {
+        try {
+            field.value = await readClipboardText();
+        } catch (err) {
+            document.getElementById('advancedPanel').open = true;
+            return showError("Colle la réponse dans le champ des options avancées, puis touche à nouveau « Coller et appliquer ».");
+        }
+    }
+
+    const answer = field.value.trim();
+    if (answer.startsWith('⚙️ PROTOCOLE') || answer.startsWith('⚠️ LB REACTOR')) {
+        field.value = '';
+        return showError("C'est le message de Reactor qui est copié : copie d'abord la réponse de l'IA.");
+    }
+    const looksLikeCode = answer.includes('```') || /^\s*(\/\/ @|(async )?function |const |let |class )/m.test(answer);
+    if (!looksLikeCode) {
+        field.value = '';
+        return showError("Aucun code trouvé : copie la réponse entière, ou réponds à la question de l'IA.");
+    }
+
+    // Pas encore de code : c'est forcément un premier code
+    if (!domElements.reactCode.value.trim()) return installFirstCode();
+    if (lastApplied && lastApplied.answer === answer && lastApplied.code === domElements.reactCode.value) {
+        field.value = '';
+        return showError("Réponse déjà appliquée : copie la nouvelle réponse de l'IA.");
+    }
+
+    await analyzeAiResponse();
+    const summary = report.textContent;
+
+    if (!pendingReactUpdate) {
+        field.value = '';
+        const feedback = `⚠️ LB REACTOR : ta dernière réponse a été refusée, rien n'a été appliqué.\n${summary}\nRenvoie les blocs corrigés en respectant le protocole.`;
+        await copyTextToClipboard(feedback, "❌ Refusé : l'explication est copiée, colle-la à l'IA.");
+        report.textContent = summary;
+        return;
+    }
+
+    await applyAiResponse();
+    report.textContent = summary;
+}
+async function sendCurrentCode() {
+    const source = domElements.reactCode.value;
+    if (!source.trim()) return showError("Code vide.");
+    await copyTextToClipboard(buildStartContext(source), "✅ Protocole et code copiés : colle-les à l'IA.");
+}
+async function installFirstCode() {
+    const field = document.getElementById('aiResponse');
+    const report = document.getElementById('blocksReport');
+    resetReactUpdate();
+
+    let answer = field.value.trim();
+    if (!answer) {
+        try {
+            answer = (await readClipboardText()).trim();
+        } catch (err) {
+            document.getElementById('advancedPanel').open = true;
+            return showError("Colle la réponse dans le champ des options avancées, puis touche à nouveau « Premier code ».");
+        }
+    }
+    if (answer.startsWith('⚙️ PROTOCOLE') || answer.startsWith('⚠️ LB REACTOR')) {
+        return showError("C'est le message de Reactor qui est copié : copie d'abord la réponse de l'IA.");
+    }
+
+    // Des retouches sur une application existante : c'est le travail d'« Appliquer »
+    if (domElements.reactCode.value.trim() && /^[ \t]*\/\/[ \t]*@(REMPLACER|AJOUTER|CLASSES|TEXTE)/m.test(answer)) {
+        field.value = answer;
+        return pasteAndApply();
+    }
+
+    try {
+        await ensureBabel();
+        // Un premier code n'a pas besoin d'ordres : leurs lignes sont retirées
+        const code = extractAiCode(answer.replace(/\r\n/g, '\n'))
+            .replace(/^[ \t]*\/\/[ \t]*@(REMPLACER|AJOUTER|SUPPRIMER).*$/gm, '')
+            .trim();
+        if (!parseReactBlocks(code).blocks.some(b => b.name === 'App')) {
+            throw new Error("Aucun composant App : ce n'est pas un premier code complet.");
+        }
+        Babel.transform(code, {
+            filename: 'component.tsx',
+            presets: [['react', { runtime: 'classic' }], 'typescript']
+        });
+        checkNewFlaws('', code);
+
+        const previous = domElements.reactCode.value;
+        if (previous.trim() && !confirm("Remplacer tout le code actuel par ce nouveau code ?")) return;
+
+        localStorage.setItem('lb-reactor-previous', previous);
+        domElements.reactCode.value = code;
+        localStorage.setItem('lb-reaactor-code', code);
+        recordVersion(previous, domElements.reactCode.value, "🆕 Premier code");
+        freshCode = domElements.reactCode.value;
+        field.value = '';
+        generateManifestAndSW();
+        await runInPreview();
+        await refreshReactIndex();
+        report.textContent = "🆕 Application installée.";
+    } catch (err) {
+        field.value = '';
+        report.textContent = `❌ ${err.message}`;
+        const state = domElements.reactCode.value.trim()
+            ? "Mon code n'a pas changé."
+            : "Rien n'est installé : il n'y a encore AUCUN code chez moi.";
+        const feedback = `⚠️ LB REACTOR : ta dernière réponse a été refusée. ${state}\n❌ ${err.message}\nRenvoie TOUT le code complet corrigé, avec function App(), sans aucun ordre @.`;
+        await copyTextToClipboard(feedback, "❌ Refusé : l'explication est copiée, colle-la à l'IA.");
+    }
+}
+let lastRuntimeError = '';
+// Code qui vient d'être appliqué, tant qu'on n'est pas revenu en arrière
+let freshCode = '';
+// Évite d'appliquer deux fois la même réponse restée dans le presse-papiers
+let lastApplied = null;
+function handlePreviewMessage(event) {
+    const frame = domElements.previewArea.querySelector('iframe');
+    if (!frame || event.source !== frame.contentWindow) return;
+    if (!event.data || event.data.type !== 'lb-error' || lastRuntimeError) return;
+
+    // La première erreur est gardée : c'est en général la cause
+    lastRuntimeError = event.data.message.slice(0, 500);
+    document.getElementById('fixErrorBtn').hidden = false;
+    // textContent : le message vient de l'application, il n'est pas interprété
+    domElements.statusDiv.textContent = `❌ L'application a planté : ${lastRuntimeError}`;
+
+    // Plantage de la version qui vient d'être appliquée : proposer le retour
+    const previous = localStorage.getItem('lb-reactor-previous');
+    if (freshCode === domElements.reactCode.value && previous && previous.trim()) {
+        document.getElementById('rollbackBtn').hidden = false;
+    }
+}
+function buildErrorFeedback(source, message) {
+    const found = message.match(/([A-Za-z_$][\w$]*) is not (?:defined|a function)|reading '([\w$]+)'/);
+    let hint = '';
+    if (found) {
+        const word = found[1] || found[2];
+        const names = parseReactBlocks(source).blocks
+            .filter(b => b.name && b.code.split(/[^\w$]+/).includes(word))
+            .map(b => b.name);
+        if (names.length) hint = `\nBlocs qui utilisent « ${word} » : ${names.join(', ')}`;
+    }
+    return `⚠️ LB REACTOR : l'application plante à l'exécution.\nErreur : ${message}${hint}\nCorrige avec la plus petite retouche possible, en respectant le protocole.`;
+}
+window.addEventListener('message', handlePreviewMessage);
+document.getElementById('fixErrorBtn').addEventListener('click', async () => {
+    const feedback = buildErrorFeedback(domElements.reactCode.value, lastRuntimeError);
+    await copyTextToClipboard(feedback, "🐞 Erreur copiée : colle-la à l'IA.");
+});
+document.getElementById('rollbackBtn').addEventListener('click', () => undoLastApply(lastRuntimeError));
+// Un nouvel aperçu efface l'erreur précédente
+new MutationObserver(() => {
+    lastRuntimeError = '';
+    document.getElementById('fixErrorBtn').hidden = true;
+    document.getElementById('rollbackBtn').hidden = true;
+}).observe(domElements.previewArea, { childList: true });
+async function undoLastApply(reason) {
+    const previous = localStorage.getItem('lb-reactor-previous');
+    if (previous === null) return showError("Rien à annuler.");
+    // Depuis le bouton « Annuler », reason est un événement : ignoré
+    const crash = typeof reason === 'string' && reason ? ` Il plantait avec cette erreur : ${reason}` : '';
+    const current = domElements.reactCode.value;
+
+    domElements.reactCode.value = previous;
+    localStorage.setItem('lb-reaactor-code', previous);
+    localStorage.removeItem('lb-reactor-previous');
+    // Gardé pour « Reprendre », valable tant que le code ne change pas
+    localStorage.setItem('lb-reactor-redo', JSON.stringify({ from: domElements.reactCode.value, to: current }));
+    if (previous.trim()) recordVersion(current, domElements.reactCode.value, "↩️ Annulation");
+    freshCode = '';
+    resetReactUpdate();
+    if (previous.trim()) await runInPreview();
+    else domElements.previewArea.textContent = 'Aperçu';
+    await refreshReactIndex();
+
+    const state = previous.trim()
+        ? `Voici le code actuel, repars de cette version :\n\n${CODE_FENCE}tsx\n${previous.trim()}\n${CODE_FENCE}`
+        : "Il n'y a plus de code.";
+    const feedback = `⚠️ LB REACTOR : j'ai annulé ton dernier changement.${crash} ${state}\n\nRéponds « Prêt ».`;
+    await copyTextToClipboard(feedback, "↩️ Annulé : un message est copié, colle-le à l'IA.");
+}
+async function redoLastUndo() {
+    const redo = readStored('lb-reactor-redo', null);
+    const current = domElements.reactCode.value;
+    if (!redo || redo.from !== current) return showError("Rien à reprendre.");
+
+    localStorage.setItem('lb-reactor-previous', current);
+    domElements.reactCode.value = redo.to;
+    localStorage.setItem('lb-reaactor-code', domElements.reactCode.value);
+    localStorage.removeItem('lb-reactor-redo');
+    const code = domElements.reactCode.value;
+    if (code.trim()) recordVersion(current, code, "↪️ Reprise");
+    freshCode = code;
+    resetReactUpdate();
+    if (code.trim()) await runInPreview();
+    else domElements.previewArea.textContent = 'Aperçu';
+    await refreshReactIndex();
+
+    const state = code.trim()
+        ? `Voici le code actuel, repars de cette version :\n\n${CODE_FENCE}tsx\n${code.trim()}\n${CODE_FENCE}`
+        : "Il n'y a plus de code.";
+    const feedback = `⚠️ LB REACTOR : j'ai finalement rétabli le changement annulé. ${state}\n\nRéponds « Prêt ».`;
+    await copyTextToClipboard(feedback, "↪️ Repris : un message est copié, colle-le à l'IA.");
+}
+// Vider ou coller : l'ancien code reste dans l'historique et « Annuler » le rend
+async function setCodeByHand(next, label) {
+    const before = domElements.reactCode.value;
+    if (before === next) return;
+
+    const list = readStored('lb-history', []);
+    if (before.trim()) {
+        localStorage.setItem('lb-reactor-previous', before);
+        if (list[list.length - 1]?.code !== before) {
+            list.push({ code: before, label: "Version précédente", date: Date.now() });
+        }
+    }
+    domElements.reactCode.value = next;
+    localStorage.setItem('lb-reaactor-code', domElements.reactCode.value);
+    if (next.trim()) list.push({ code: domElements.reactCode.value, label, date: Date.now() });
+    saveHistory(list);
+    renderHistory();
+
+    freshCode = '';
+    resetReactUpdate();
+    generateManifestAndSW();
+    await refreshReactIndex();
+}
+document.getElementById('reactIndexPanel').addEventListener('toggle', (e) => {
+    if (e.target.open) refreshReactIndex();
+});
+document.getElementById('firstCodeBtn').addEventListener('click', installFirstCode);
+document.getElementById('sendCodeBtn').addEventListener('click', sendCurrentCode);
+document.getElementById('pasteApplyBtn').addEventListener('click', pasteAndApply);
+document.getElementById('undoBlocksBtn').addEventListener('click', undoLastApply);
+document.getElementById('copyIndexBtn').addEventListener('click', copyReactIndex);
+document.getElementById('analyzeBlocksBtn').addEventListener('click', analyzeAiResponse);
+document.getElementById('applyBlocksBtn').addEventListener('click', applyAiResponse);
+document.getElementById('aiResponse').addEventListener('input', resetReactUpdate);
+document.getElementById('redoBlocksBtn').addEventListener('click', redoLastUndo);
+// La barre des 5 boutons (avec son compte rendu et ⋯) se place sous le code
+document.querySelector('.code-area').after(
+    document.querySelector('.main-bar').parentElement,
+    document.getElementById('fixErrorBtn'),
+    document.getElementById('rollbackBtn')
+);
+(function initCodeColors() {
+    const field = domElements.reactCode;
+    const editor = document.createElement('div');
+    editor.className = 'code-editor';
+    const layer = document.createElement('pre');
+    layer.id = 'codeColors';
+    layer.setAttribute('aria-hidden', 'true');
+    field.before(editor);
+    editor.append(layer, field);
+
+    // Les changements faits par Reactor (appliquer, annuler, coller) recolorent aussi
+    const native = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value');
+    Object.defineProperty(field, 'value', {
+        configurable: true,
+        get() { return native.get.call(this); },
+        set(value) {
+            native.set.call(this, value);
+            scheduleCodeColors();
+        }
+    });
+    field.addEventListener('input', scheduleCodeColors);
+    field.addEventListener('scroll', () => { layer.scrollTop = field.scrollTop; });
+    new ResizeObserver(scheduleCodeColors).observe(field);
+
+    document.getElementById('colorToggleBtn').addEventListener('click', event => {
+        setColorized(event.currentTarget.getAttribute('aria-pressed') !== 'true');
+    });
+    if (localStorage.getItem('lb-colorize') === '1') setColorized(true);
+})();
+(function initCodeFont() {
+    let size = Number(localStorage.getItem('lb-code-font')) || 13;
+    const apply = step => {
+        size = Math.min(24, Math.max(9, size + step));
+        document.documentElement.style.setProperty('--code-font', `${size}px`);
+        scheduleCodeColors();
+    };
+    const change = step => {
+        apply(step);
+        localStorage.setItem('lb-code-font', size);
+        showMessage(`🔠 Police du code : ${size} px`);
+    };
+    document.getElementById('fontDownBtn').addEventListener('click', () => change(-1));
+    document.getElementById('fontUpBtn').addEventListener('click', () => change(1));
+    apply(0);
+})();
+(function initFullToggle() {
+    const button = document.getElementById('fullToggleBtn');
+    button.setAttribute('aria-pressed', String(localStorage.getItem('lb-test-fullscreen') === '1'));
+    button.addEventListener('click', () => {
+        const on = button.getAttribute('aria-pressed') !== 'true';
+        button.setAttribute('aria-pressed', String(on));
+        localStorage.setItem('lb-test-fullscreen', on ? '1' : '0');
+        showMessage(on ? "⛶ Tester s'ouvre en plein écran." : "⛶ Tester reste dans la page.");
+    });
+})();
+(function initHelp() {
+    const button = document.createElement('button');
+    button.id = 'helpBtn';
+    button.className = 'dark-toggle';
+    button.textContent = '?';
+    button.title = "Aide : à quoi servent les boutons";
+    button.setAttribute('aria-label', button.title);
+    document.getElementById('darkModeToggle').before(button);
+
+    const dialog = document.createElement('dialog');
+    dialog.id = 'helpDialog';
+    dialog.innerHTML = '<div id="helpList"></div><button class="dot-button">Fermer</button>';
+    document.body.append(dialog);
+
+    button.addEventListener('click', showHelp);
+    dialog.querySelector('button').addEventListener('click', () => dialog.close());
+    // Un toucher en dehors de la fenêtre la ferme aussi
+    dialog.addEventListener('click', event => {
+        if (event.target === dialog) dialog.close();
+    });
+})();
+setButtonContent(document.getElementById('pickBtn'), 'pick', "Désigner");
+setButtonContent(document.getElementById('deployBtn'), 'deploy', "Deploy");
+// Données du projet ouvert ; les autres projets sont rangés dans « lb-project:id »
+const PROJECT_KEYS = ['lb-reaactor-code', 'lb-reactor-previous', 'lb-reactor-redo', 'lb-preview-storage', 'lb-history'];
+const HISTORY_LIMIT = 20;
+const HISTORY_MAX_CHARS = 600000;
+function readStored(key, fallback) {
+    try {
+        return JSON.parse(localStorage.getItem(key)) ?? fallback;
+    } catch (err) {
+        console.warn(err);
+        return fallback;
+    }
+}
+function saveHistory(list) {
+    while (list.length > HISTORY_LIMIT || (list.length > 2 && JSON.stringify(list).length > HISTORY_MAX_CHARS)) {
+        list.shift();
+    }
+    // Stockage plein : les plus anciennes versions partent en premier
+    while (list.length) {
+        try {
+            localStorage.setItem('lb-history', JSON.stringify(list));
+            return;
+        } catch (err) {
+            list.shift();
+        }
+    }
+    localStorage.removeItem('lb-history');
+}
+function recordVersion(before, after, label) {
+    const list = readStored('lb-history', []);
+    const last = list[list.length - 1];
+    // Garde aussi ce qui a été collé ou retouché à la main entre-temps
+    if (before.trim() && (!last || last.code !== before)) {
+        list.push({ code: before, label: "Version précédente", date: Date.now() });
+    }
+    list.push({ code: after, label, date: Date.now() });
+    saveHistory(list);
+    renderHistory();
+}
+function describeChange(answer, summary) {
+    // La phrase de l'IA hors du bloc de code, sinon la liste des changements
+    if (answer.includes('```')) {
+        const sentence = answer
+            .replace(/(`{3,})[\s\S]*?\1/g, '')
+            .replace(/Affirmatif\.?/g, '')
+            .split('\n')
+            .map(line => line.trim())
+            .find(Boolean);
+        if (sentence) return sentence.slice(0, 100);
+    }
+    return summary.split('\n').join(' · ').slice(0, 100) || "Modification";
+}
+function renderHistory() {
+    const panel = document.getElementById('historyPanel');
+    if (panel.hidden) return;
+    panel.textContent = '';
+    const list = readStored('lb-history', []);
+    if (!list.length) panel.textContent = "Aucune version pour l'instant.";
+
+    let currentFound = false;
+    list.slice().reverse().forEach(entry => {
+        const button = document.createElement('button');
+        const date = new Date(entry.date).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+        const isCurrent = !currentFound && entry.code === domElements.reactCode.value;
+        if (isCurrent) currentFound = true;
+        // textContent : le libellé vient de la réponse de l'IA
+        button.textContent = `${isCurrent ? '● ' : ''}${date} — ${entry.label}`;
+        button.addEventListener('click', () => restoreVersion(entry));
+        panel.appendChild(button);
+    });
+}
+async function restoreVersion(entry) {
+    const current = domElements.reactCode.value;
+    if (entry.code === current) return showMessage("C'est déjà la version actuelle.");
+
+    localStorage.setItem('lb-reactor-previous', current);
+    domElements.reactCode.value = entry.code;
+    localStorage.setItem('lb-reaactor-code', entry.code);
+    recordVersion(current, domElements.reactCode.value, `↩️ Retour : ${entry.label.replace(/^↩️ Retour : /, '')}`);
+    freshCode = '';
+    resetReactUpdate();
+    generateManifestAndSW();
+    await runInPreview();
+    await refreshReactIndex();
+
+    const feedback = `⚠️ LB REACTOR : je suis revenu à une version antérieure. Voici le code actuel, repars de cette version :\n\n${CODE_FENCE}tsx\n${entry.code.trim()}\n${CODE_FENCE}\n\nRéponds « Prêt ».`;
+    await copyTextToClipboard(feedback, "🕘 Version rétablie : un message est copié, colle-le à l'IA.");
+}
+function readProjects() {
+    return readStored('lb-projects', null);
+}
+function saveProjects(projects) {
+    localStorage.setItem('lb-projects', JSON.stringify(projects));
+}
+function getActiveProject(projects) {
+    return projects.list.find(p => p.id === projects.active);
+}
+function updateActiveProject(changes) {
+    const projects = readProjects();
+    Object.assign(getActiveProject(projects), changes);
+    try {
+        saveProjects(projects);
+    } catch (err) {
+        showError("Stockage plein : réglage du projet non gardé.");
+    }
+}
+// Range le projet ouvert, en raccourcissant son historique si la place manque
+function stashProject(id) {
+    const data = {};
+    PROJECT_KEYS.forEach(key => {
+        const value = localStorage.getItem(key);
+        if (value !== null) data[key] = value;
+    });
+    const history = readStored('lb-history', []);
+
+    while (true) {
+        try {
+            localStorage.setItem(`lb-project:${id}`, JSON.stringify(data));
+            return;
+        } catch (err) {
+            if (!history.length) throw new Error("Stockage du navigateur plein : supprime un projet.");
+            history.shift();
+            data['lb-history'] = JSON.stringify(history);
+        }
+    }
+}
+function restoreProject(id) {
+    const data = readStored(`lb-project:${id}`, null);
+    if (!data) return;
+    PROJECT_KEYS.forEach(key => localStorage.removeItem(key));
+    Object.entries(data).forEach(([key, value]) => localStorage.setItem(key, value));
+    localStorage.removeItem(`lb-project:${id}`);
+}
+function renderProjects() {
+    const projects = readProjects();
+    const select = document.getElementById('projectSelect');
+    const active = projects.list.find(project => project.id === projects.active);
+    document.getElementById('projectName').textContent = active ? active.name : 'Projet';
+    select.textContent = '';
+    projects.list.forEach(project => {
+        select.add(new Option(project.name, project.id, false, project.id === projects.active));
+    });
+}
+// Remet le nom de dépôt et l'icône du projet ouvert
+async function applyProjectMeta() {
+    const project = getActiveProject(readProjects());
+    domElements.repoInput.value = project.repo;
+    domElements.iconInput.value = '';
+    domElements.previewIcon.textContent = '';
+    uploadedImage = null;
+    generateManifestAndSW();
+    if (!project.icon) return;
+
+    const image = document.createElement('img');
+    image.src = project.icon;
+    domElements.previewIcon.appendChild(image);
+    const blob = await (await fetch(project.icon)).blob();
+    if (readProjects().active !== project.id) return;
+    uploadedImage = blob;
+    generateManifestAndSW();
+}
+async function showProject() {
+    domElements.reactCode.value = localStorage.getItem('lb-reaactor-code') || '';
+    // L'ancien aperçu est retiré tout de suite : il n'écrit plus dans le nouveau projet
+    domElements.previewArea.textContent = 'Aperçu';
+    document.getElementById('aiResponse').value = '';
+    resetReactUpdate();
+    resetChecklist();
+    domElements.finalLinkContainer.textContent = '';
+    freshCode = '';
+    renderProjects();
+    renderHistory();
+    await applyProjectMeta();
+
+    if (domElements.reactCode.value.trim()) await runInPreview();
+    else showMessage("🆕 Projet vide : touche « Protocole » pour démarrer.");
+    if (document.getElementById('reactIndexPanel').open) await refreshReactIndex();
+}
+async function openProject(id) {
+    const projects = readProjects();
+    if (id === projects.active) return;
+    const oldId = projects.active;
+    try {
+        if (domElements.deployBtn.disabled) throw new Error("Attends la fin du déploiement.");
+        stashProject(oldId);
+        projects.active = id;
+        try {
+            saveProjects(projects);
+        } catch (err) {
+            localStorage.removeItem(`lb-project:${oldId}`);
+            throw err;
+        }
+    } catch (err) {
+        renderProjects();
+        return showError(err.message);
+    }
+    PROJECT_KEYS.forEach(key => localStorage.removeItem(key));
+    restoreProject(id);
+    await showProject();
+}
+async function createProject() {
+    const name = (prompt("Nom du nouveau projet :") || '').trim();
+    if (!name) return;
+    const repo = name.normalize('NFD').replace(/\p{M}/gu, '')
+        .toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '');
+    const id = `p${Date.now().toString(36)}`;
+    const projects = readProjects();
+    projects.list.push({ id, name, repo, icon: '' });
+    try {
+        saveProjects(projects);
+    } catch (err) {
+        return showError("Stockage du navigateur plein : supprime un projet.");
+    }
+    await openProject(id);
+}
+function renameProject() {
+    const project = getActiveProject(readProjects());
+    const name = (prompt("Nouveau nom du projet :", project.name) || '').trim();
+    if (!name) return;
+    updateActiveProject({ name });
+    renderProjects();
+}
+async function deleteProject() {
+    if (domElements.deployBtn.disabled) return showError("Attends la fin du déploiement.");
+    const projects = readProjects();
+    const project = getActiveProject(projects);
+    if (!confirm(`Supprimer « ${project.name} » : son code, son historique et ses données d'aperçu ? C'est définitif. Le dépôt GitHub n'est pas touché.`)) return;
+
+    projects.list = projects.list.filter(p => p.id !== project.id);
+    if (!projects.list.length) {
+        projects.list.push({ id: `p${Date.now().toString(36)}`, name: "Projet 1", repo: '', icon: '' });
+    }
+    projects.active = projects.list[0].id;
+    saveProjects(projects);
+    PROJECT_KEYS.forEach(key => localStorage.removeItem(key));
+    restoreProject(projects.active);
+    await showProject();
+}
+async function saveProjectIcon() {
+    const id = readProjects().active;
+    const file = domElements.iconInput.files[0];
+    if (!file) return;
+    if (file.type !== 'image/png' && file.type !== 'image/jpeg') return updateActiveProject({ icon: '' });
+
+    const url = URL.createObjectURL(file);
+    const image = new Image();
+    image.onload = () => {
+        URL.revokeObjectURL(url);
+        // Réduite à 512 px au plus : la plus grande taille utilisée au déploiement
+        const scale = Math.min(1, 512 / Math.max(image.width, image.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(image.width * scale) || 1;
+        canvas.height = Math.round(image.height * scale) || 1;
+        canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
+        if (readProjects().active === id) updateActiveProject({ icon: canvas.toDataURL('image/png') });
+    };
+    image.onerror = () => {
+        URL.revokeObjectURL(url);
+        showError("Image illisible.");
+    };
+    image.src = url;
+}
+function initProjects() {
+    // Premier lancement : le code actuel devient le « Projet 1 »
+    if (!readProjects()) {
+        saveProjects({ active: 'p1', list: [{ id: 'p1', name: "Projet 1", repo: '', icon: '' }] });
+    }
+    // Répare un changement de projet interrompu
+    restoreProject(readProjects().active);
+    domElements.reactCode.value = localStorage.getItem('lb-reaactor-code') || '';
+    renderProjects();
+    applyProjectMeta();
+}
+document.getElementById('projectSelect').addEventListener('change', e => openProject(e.target.value));
+document.getElementById('newProjectBtn').addEventListener('click', createProject);
+document.getElementById('renameProjectBtn').addEventListener('click', renameProject);
+document.getElementById('deleteProjectBtn').addEventListener('click', deleteProject);
+document.getElementById('historyBtn').addEventListener('click', () => {
+    const panel = document.getElementById('historyPanel');
+    panel.hidden = !panel.hidden;
+    renderHistory();
+});
+domElements.repoInput.addEventListener('input', () => updateActiveProject({ repo: domElements.repoInput.value.trim() }));
+domElements.iconInput.addEventListener('change', saveProjectIcon);
+initProjects();
+document.getElementById('clearCodeBtn').addEventListener('click', async () => {
+    if (!domElements.reactCode.value) return showError("Le champ est déjà vide.");
+    if (!confirm("Vider le code ?")) return;
+    await setCodeByHand('', "🧹 Code vidé");
+    showMessage("🧹 Code vidé.");
+});
+document.getElementById('copyCodeBtn').addEventListener('click', async () => {
+    if (!domElements.reactCode.value.trim()) return showError("Code vide.");
+    await copyTextToClipboard(domElements.reactCode.value, "✅ Code copié.");
+});
+document.getElementById('projectToggle').addEventListener('click', () => {
+    const tools = document.getElementById('projectTools');
+    tools.hidden = !tools.hidden;
+    document.getElementById('projectToggle').setAttribute('aria-expanded', String(!tools.hidden));
+    document.getElementById('projectArrow').textContent = tools.hidden ? '▾' : '▴';
+    if (tools.hidden) document.getElementById('historyPanel').hidden = true;
+});
+// Pour l'aperçu seulement : chaque balise reçoit son identifiant
+function tagForPicking(source) {
+    try {
+        return listHostElements(source)
+            .map((element, id) => ({ at: element.tag.end, text: ` data-lb="${id}"` }))
+            .sort((a, b) => b.at - a.at)
+            .reduce((code, item) => code.slice(0, item.at) + item.text + code.slice(item.at), source);
+    } catch (err) {
+        // Code invalide : la compilation affichera l'erreur habituelle
+        return source;
+    }
+}
+// Exécutée dans l'aperçu : en mode désignation, un toucher n'actionne rien
+function previewPickShim() {
+    let picking = false;
+    let multi = false;
+    const marked = new Set();
+    function mark(element, on) {
+        element.style.outline = on ? '3px solid #f59e0b' : '';
+        if (on) marked.add(element);
+        else marked.delete(element);
+    }
+    function unmark() {
+        marked.forEach(element => mark(element, false));
+    }
+    window.addEventListener('message', event => {
+        if (event.source !== window.parent || !event.data || event.data.type !== 'lb-picking') return;
+        picking = event.data.on;
+        multi = Boolean(event.data.multi);
+        if (!picking) unmark();
+    });
+    ['pointerdown', 'pointerup', 'mousedown', 'mouseup'].forEach(type => {
+        window.addEventListener(type, event => {
+            if (picking) event.stopImmediatePropagation();
+        }, true);
+    });
+    window.addEventListener('click', event => {
+        if (!picking) return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        const element = event.target.closest('[data-lb]');
+        if (!element) return;
+
+        // En multiple, retoucher un élément le retire de la sélection
+        const selected = !(multi && marked.has(element));
+        if (!multi) unmark();
+        mark(element, selected);
+        // Un composant réutilisé affiche plusieurs fois le même code
+        const same = [...document.querySelectorAll(`[data-lb="${element.getAttribute('data-lb')}"]`)];
+        window.parent.postMessage({
+            type: 'lb-pick',
+            selected,
+            count: same.length,
+            rank: same.indexOf(element) + 1,
+            id: Number(element.getAttribute('data-lb')),
+            text: element.textContent.trim().replace(/\s+/g, ' ').slice(0, 40)
+        }, '*');
+    }, true);
+}
+function addPreviewPicker(html) {
+    const script = `<script>(${previewPickShim})();<\/script>`;
+    return html.replace('<head>', () => `<head>${script}`);
+}
+let isPicking = false;
+let pickedList = [];
+function isMultiPick() {
+    return document.getElementById('multiPickBtn').getAttribute('aria-pressed') === 'true';
+}
+function updateCopyPickButton() {
+    const button = document.getElementById('copyPickBtn');
+    button.hidden = !pickedList.length;
+    if (!pickedList.length) return;
+
+    let text = `Copier (${pickedList.length})`;
+    if (pickedList.length === 1) {
+        const element = listHostElements(pickedList[0].source)[pickedList[0].id];
+        const zone = getZoneName(element.node);
+        text = `Copier ${element.component}${zone ? `#${zone}` : ` <${element.tag.name}>`}`;
+    }
+    setButtonContent(button, 'copy', text);
+}
+function setPicking(on) {
+    const frame = domElements.previewArea.querySelector('iframe');
+    if (on && !frame) return showError("Lance d'abord l'aperçu.");
+    const multi = isMultiPick();
+    // Une nouvelle sélection multiple repart de zéro
+    if (on && multi) {
+        pickedList = [];
+        updateCopyPickButton();
+    }
+    isPicking = on;
+    setButtonContent(document.getElementById('pickBtn'), on ? 'stop' : 'pick', on ? "Arrêter" : "Désigner");
+    if (frame) frame.contentWindow.postMessage({ type: 'lb-picking', on, multi }, '*');
+    if (on) showMessage(multi
+        ? "🎯 Touche les éléments (retoucher = retirer), puis Copier."
+        : "🎯 Touche un élément dans l'aperçu.");
+}
+function handlePickMessage(event) {
+    const frame = domElements.previewArea.querySelector('iframe');
+    if (!frame || event.source !== frame.contentWindow) return;
+    if (!event.data || event.data.type !== 'lb-pick') return;
+
+    const source = domElements.reactCode.value;
+    let element;
+    try {
+        element = listHostElements(source)[event.data.id];
+    } catch (err) {
+        console.warn(err);
+    }
+    if (!element) return showError("Le code a changé : relance l'aperçu.");
+
+    const pick = {
+        id: event.data.id,
+        source,
+        text: String(event.data.text).slice(0, 40),
+        count: Number(event.data.count) || 1,
+        rank: Number(event.data.rank) || 1
+    };
+    if (isMultiPick()) {
+        pickedList = pickedList.filter(item => item.id !== pick.id || item.rank !== pick.rank);
+        if (event.data.selected) pickedList.push(pick);
+        showMessage(`🎯 ${pickedList.length} élément(s) choisi(s).`);
+    } else {
+        pickedList = [pick];
+    }
+    updateCopyPickButton();
+}
+// Donne un nom fixe à une balise qui n'en a pas, pour pouvoir la viser
+function nameElement(source, element) {
+    const used = new Set();
+    walkReactAst(element.root, node => {
+        const zone = getZoneName(node);
+        if (zone) used.add(zone);
+    });
+    let number = 1;
+    while (used.has(`${element.tag.name}-${number}`)) number++;
+    const zone = `${element.tag.name}-${number}`;
+    const code = spliceReactCode(source, element.tag.end, element.tag.end, ` data-bloc="${zone}"`);
+    return { zone, code };
+}
+async function copyPickedElement() {
+    const current = domElements.reactCode.value;
+    if (!pickedList.length || pickedList.some(pick => pick.source !== current)) {
+        return showError("Le code a changé : relance l'aperçu.");
+    }
+
+    // Un groupe par endroit du code, avec les numéros choisis à l'écran
+    const groups = [];
+    pickedList.forEach(pick => {
+        let group = groups.find(item => item.id === pick.id);
+        if (!group) groups.push(group = { id: pick.id, count: pick.count, picks: [] });
+        group.picks.push(pick);
+    });
+
+    let source = current;
+    const added = [];
+    groups.forEach(group => {
+        const element = listHostElements(source)[group.id];
+        group.zone = getZoneName(element.node);
+        // data-bloc calculé : inutilisable, et un second attribut serait en double
+        group.computed = !group.zone && element.node.openingElement.attributes.some(a => a.name?.name === 'data-bloc');
+        if (!group.zone && !group.computed) {
+            const named = nameElement(source, element);
+            group.zone = named.zone;
+            source = named.code;
+            added.push(`${element.component}#${named.zone}`);
+        }
+    });
+    if (added.length) {
+        domElements.reactCode.value = source;
+        localStorage.setItem('lb-reaactor-code', source);
+        recordVersion(current, domElements.reactCode.value, `🎯 Élément nommé : ${added.join(', ')}`);
+        source = domElements.reactCode.value;
+        pickedList.forEach(pick => { pick.source = source; });
+    }
+
+    const elements = listHostElements(source);
+    // Un élément placé dans un autre élément désigné (affiché une seule fois) est signalé
+    const parentNumber = group => groups.findIndex(other => {
+        const outer = elements[other.id].node;
+        const inner = elements[group.id].node;
+        return other !== group && other.count === 1 && outer.start < inner.start && inner.end < outer.end;
+    }) + 1;
+    const parts = groups.map(group => {
+        const element = elements[group.id];
+        const opening = element.node.openingElement;
+        const snippet = source.slice(opening.start, opening.end).slice(0, 1500);
+        const address = group.zone ? `${element.component}#${group.zone}` : element.component;
+        group.picks.sort((a, b) => a.rank - b.rank);
+        const ranks = group.picks.map(pick => pick.rank);
+        const texts = group.picks.filter(pick => pick.text).map(pick => `« ${pick.text} »`).join(', ');
+        const subject = ranks.length > 1 ? 'les éléments' : "l'élément";
+        const label = texts ? ` ${texts}` : '';
+        let repeated = '';
+        if (group.count > 1) {
+            const chosen = ranks.length > 1
+                ? `je désigne les n° ${ranks.join(', ')}. Ne modifie que ceux-là`
+                : `je désigne le n° ${ranks[0]}. Ne modifie que celui-là`;
+            repeated = `\nAttention : ce code est affiché ${group.count} fois à l'écran, ${chosen}, sauf si ma demande dit « tous ».`;
+        }
+        const fix = group.computed ? "\n(Son data-bloc est calculé : remplace-le d'abord par un nom en texte fixe.)" : '';
+        const parent = parentNumber(group);
+        const inside = parent ? `\n(Inclus dans le n° ${parent}.)` : '';
+        return `Dans ${address}, ${subject}${label} :\n${snippet}${repeated}${inside}${fix}`;
+    });
+
+    const total = pickedList.length;
+    const body = parts.length > 1
+        ? `Ma demande concerne ces ${total} éléments :\n\n${parts.map((part, index) => `${index + 1}) ${part}`).join('\n\n')}`
+        : parts[0];
+    let note = '';
+    if (added.length) {
+        const names = added.map(address => `data-bloc="${address.split('#')[1]}" (${address})`).join(', ');
+        note = `\n(Reactor vient d'ajouter ${names} : le code à jour le contient.)`;
+    }
+    const done = total > 1
+        ? `📋 ${total} éléments copiés : colle-les à l'IA, puis écris ta demande.`
+        : "📋 Élément copié : colle-le à l'IA, puis écris ta demande.";
+    await copyTextToClipboard(`${body}${note}\nMa demande : `, done);
+}
+window.addEventListener('message', handlePickMessage);
+document.getElementById('pickBtn').addEventListener('click', () => setPicking(!isPicking));
+document.getElementById('multiPickBtn').addEventListener('click', event => {
+    const on = !isMultiPick();
+    event.currentTarget.setAttribute('aria-pressed', String(on));
+    setPicking(false);
+    pickedList = [];
+    updateCopyPickButton();
+    showMessage(on ? "Sélection multiple activée : touche Désigner." : "Sélection multiple désactivée.");
+});
+document.getElementById('copyPickBtn').addEventListener('click', async () => {
+    setPicking(false);
+    await copyPickedElement();
+});
+// Un nouvel aperçu quitte le mode désignation
+new MutationObserver(() => {
+    setPicking(false);
+    pickedList = [];
+    updateCopyPickButton();
+}).observe(domElements.previewArea, { childList: true });
+const CLOUD_URL = 'https://reactor-worker.mmm1747lb.workers.dev';
+const AUTO_BACKUP_DELAY = 30000;
+// Un peu sous la limite du Worker
+const CLOUD_MAX_BYTES = 1700000;
+// La clé n'est jamais écrite dans le code : elle reste dans ce navigateur
+function askCloudKey() {
+    const key = (prompt("Clé de sauvegarde (APP_KEY) :") || '').trim();
+    if (key) localStorage.setItem('lb-cloud-key', key);
+    return key;
+}
+async function callCloud(path, body) {
+    const key = localStorage.getItem('lb-cloud-key') || askCloudKey();
+    if (!key) throw new Error("Clé requise.");
+    const response = await fetch(`${CLOUD_URL}${path}`, {
+        method: body ? 'POST' : 'GET',
+        headers: { 'Authorization': `Bearer ${key}`, ...(body && { 'Content-Type': 'application/json' }) },
+        body,
+        cache: 'no-store'
+    });
+    if (response.status === 401) {
+        localStorage.removeItem('lb-cloud-key');
+        throw new Error("Clé incorrecte : touche à nouveau pour la ressaisir.");
+    }
+    const result = await response.json();
+    if (!result.ok) throw new Error(result.error);
+    return result;
+}
+// Rend null si le projet reste trop gros, même sans historique
+function buildBackup(project, keys) {
+    const copy = { ...keys };
+    const history = JSON.parse(copy['lb-history'] || '[]');
+    while (true) {
+        const body = JSON.stringify({ name: project.name, data: { repo: project.repo, icon: project.icon, keys: copy } });
+        if (new Blob([body]).size <= CLOUD_MAX_BYTES) return body;
+        if (!history.length) return null;
+        history.shift();
+        copy['lb-history'] = JSON.stringify(history);
+    }
+}
+function readProjectKeys(id, activeId) {
+    if (id !== activeId) return readStored(`lb-project:${id}`, {});
+    const keys = {};
+    PROJECT_KEYS.forEach(key => {
+        const value = localStorage.getItem(key);
+        if (value !== null) keys[key] = value;
+    });
+    return keys;
+}
+async function backupProjects() {
+    const projects = readProjects();
+    // Tout est lu avant l'envoi ; un projet vide n'écrase jamais une sauvegarde
+    const items = projects.list
+        .map(project => ({ project, keys: readProjectKeys(project.id, projects.active) }))
+        .filter(item => (item.keys['lb-reaactor-code'] || '').trim());
+    if (!items.length) return showError("Aucun code à sauvegarder.");
+
+    let sent = 0;
+    for (const item of items) {
+        const body = buildBackup(item.project, item.keys);
+        if (!body) continue;
+        showMessage(`☁️ Envoi ${sent + 1}/${items.length}...`);
+        await callCloud(`/api/projects/${encodeURIComponent(item.project.id)}`, body);
+        sent++;
+    }
+    if (sent < items.length) return showError(`${sent} projet(s) sauvegardé(s), ${items.length - sent} trop volumineux.`);
+    showMessage(`✅ ${sent} projet(s) sauvegardé(s) en ligne.`);
+}
+// Remplace le projet ouvert sans perdre sa version ni son historique locaux
+function replaceActiveProject(keys) {
+    const before = domElements.reactCode.value;
+    const code = keys['lb-reaactor-code'];
+    const history = [...JSON.parse(keys['lb-history'] || '[]'), ...readStored('lb-history', [])]
+        .sort((a, b) => a.date - b.date)
+        .filter((entry, i, list) => !i || entry.code !== list[i - 1].code);
+
+    // Écrit en premier : si le stockage est plein, rien n'a changé
+    localStorage.setItem('lb-reaactor-code', code);
+    // L'ancien aperçu ne doit plus écrire ses données
+    domElements.previewArea.textContent = 'Aperçu';
+    localStorage.removeItem('lb-preview-storage');
+    if (keys['lb-preview-storage']) localStorage.setItem('lb-preview-storage', keys['lb-preview-storage']);
+    if (before.trim()) localStorage.setItem('lb-reactor-previous', before);
+    saveHistory(history);
+    recordVersion(before, code, "☁️ Sauvegarde restaurée");
+}
+async function restoreProjects() {
+    if (domElements.deployBtn.disabled) return showError("Attends la fin du déploiement.");
+    showMessage("📥 Lecture des sauvegardes...");
+    const { projects: remote } = await callCloud('/api/projects');
+    if (!remote.length) return showMessage("Aucune sauvegarde en ligne.");
+
+    const downloads = [];
+    for (const item of remote) {
+        const saved = await callCloud(`/api/projects/${encodeURIComponent(item.id)}`);
+        downloads.push({ id: item.id, ...saved });
+    }
+
+    const projects = readProjects();
+    let restored = 0;
+    let kept = 0;
+    let activeReplaced = false;
+    for (const { id, name, date, data } of downloads) {
+        const keys = {};
+        PROJECT_KEYS.forEach(key => {
+            if (typeof data.keys?.[key] === 'string') keys[key] = data.keys[key];
+        });
+        const code = keys['lb-reaactor-code'];
+        if (!code) continue;
+        const local = projects.list.find(p => p.id === id);
+        const localCode = local ? readProjectKeys(id, projects.active)['lb-reaactor-code'] || '' : '';
+        if (localCode.trim() === code.trim()) continue;
+
+        if (id === projects.active) {
+            const day = new Date(date).toLocaleString('fr-FR');
+            if (localCode.trim() && !confirm(`Remplacer le projet ouvert « ${local.name} » par sa sauvegarde du ${day} ?`)) {
+                kept++;
+                continue;
+            }
+            replaceActiveProject(keys);
+            activeReplaced = true;
+        } else if (localCode.trim()) {
+            // Un autre projet local différent n'est jamais écrasé
+            kept++;
+            continue;
+        } else {
+            localStorage.setItem(`lb-project:${id}`, JSON.stringify(keys));
+        }
+
+        const meta = {
+            name: String(name),
+            repo: String(data.repo || ''),
+            icon: String(data.icon || '').startsWith('data:image/') ? data.icon : ''
+        };
+        if (local) Object.assign(local, meta);
+        else projects.list.push({ id, ...meta });
+        // Enregistré à chaque projet : aucun rangement ne reste orphelin
+        saveProjects(projects);
+        restored++;
+    }
+
+    if (activeReplaced) await showProject();
+    else renderProjects();
+    const note = kept ? ` ${kept} gardé(s) tel(s) quel(s) : ouvre-le puis restaure pour le remplacer.` : '';
+    const ai = activeReplaced ? " Pour l'IA : ⋯ puis « Mon code »." : '';
+    showMessage(`✅ ${restored} projet(s) restauré(s).${note}${ai}`);
+}
+async function runCloudTask(task) {
+    const buttons = ['backupBtn', 'restoreBtn'].map(id => document.getElementById(id));
+    buttons.forEach(button => { button.disabled = true; });
+    try {
+        await task();
+    } catch (err) {
+        showError(`Sauvegarde en ligne : ${err.message}`);
+    }
+    buttons.forEach(button => { button.disabled = false; });
+}
+// Envoie le projet ouvert 30 secondes après le dernier changement
+async function autoBackup() {
+    const button = document.getElementById('autoSaveBtn');
+    if (button.getAttribute('aria-pressed') !== 'true' || autoBackup.busy) return;
+    if (document.getElementById('backupBtn').disabled) return;
+
+    const projects = readProjects();
+    const project = getActiveProject(projects);
+    const code = domElements.reactCode.value;
+    if (!code.trim()) return;
+    const signature = JSON.stringify([project.id, project.name, project.repo, code]);
+    if (signature === localStorage.getItem('lb-auto-saved')) return;
+
+    // Chaque nouveau changement relance le délai
+    if (signature !== autoBackup.pending) {
+        autoBackup.pending = signature;
+        autoBackup.since = Date.now();
+        return;
+    }
+    if (Date.now() - autoBackup.since < AUTO_BACKUP_DELAY) return;
+
+    // Jamais de demande de clé en arrière-plan
+    if (!localStorage.getItem('lb-cloud-key')) {
+        setAutoBackup(false);
+        return showError("Sauvegarde auto arrêtée : réactive-la pour saisir la clé.");
+    }
+    autoBackup.busy = true;
+    try {
+        const body = buildBackup(project, readProjectKeys(project.id, projects.active));
+        if (!body) throw new Error("projet trop volumineux.");
+        await callCloud(`/api/projects/${encodeURIComponent(project.id)}`, body);
+        localStorage.setItem('lb-auto-saved', signature);
+        showMessage(`☁️ « ${project.name} » sauvegardé automatiquement.`);
+    } catch (err) {
+        // Hors ligne ou serveur indisponible : nouvel essai dans 30 secondes
+        autoBackup.since = Date.now();
+        showError(`Sauvegarde auto : ${err.message}`);
+    }
+    autoBackup.busy = false;
+}
+function setAutoBackup(on) {
+    document.getElementById('autoSaveBtn').setAttribute('aria-pressed', String(on));
+    localStorage.setItem('lb-auto-backup', on ? '1' : '0');
+    autoBackup.pending = null;
+}
+// Un titre de rubrique est une chaîne seule ; un bouton : [sélecteur, explication]
+const HELP_ITEMS = [
+    "En haut",
+    ['#darkModeToggle', "Mode clair ou sombre"],
+    "Réglages (vert = activé)",
+    ['#toggleSigBtn', "Ajoute ou retire la signature dans l'application"],
+    ['#colorToggleBtn', "Colore le code"],
+    ['#fullToggleBtn', "« Tester » s'ouvre en plein écran"],
+    ['#autoSaveBtn', "Sauvegarde en ligne 30 s après un changement"],
+    "Projet",
+    ['#promptBtn', "Copie le protocole à coller à l'IA"],
+    ['#firstCodeBtn', "Installe le premier code donné par l'IA"],
+    ['#backupBtn', "Sauvegarde tous les projets en ligne"],
+    ['#restoreBtn', "Restaure les projets sauvegardés"],
+    ['#newProjectBtn', "Nouveau projet"],
+    ['#renameProjectBtn', "Renomme le projet"],
+    ['#deleteProjectBtn', "Supprime le projet"],
+    ['#historyBtn', "Anciennes versions du code"],
+    ['#cloudKeyBtn', "Saisit la clé de sauvegarde"],
+    "Code",
+    ['#fontDownBtn', "Réduit la police du code"],
+    ['#fontUpBtn', "Agrandit la police du code"],
+    ['#undoBlocksBtn', "Annule le dernier changement"],
+    ['#pasteApplyBtn', "Colle et applique la réponse de l'IA"],
+    ['#redoBlocksBtn', "Reprend le changement annulé"],
+    ['#runPreviewBtn', "Teste l'application"],
+    ['#advancedPanel > summary', "Plus d'outils"],
+    "Aperçu et publication",
+    ['#multiPickBtn', "Désigner plusieurs éléments à la fois"],
+    ['#internalFullscreenBtn', "Aperçu en plein écran"],
+    ['#tokenPasteBtn', "Colle le token GitHub"],
+    ['#copyConsoleBtn', "Copie le message de statut"]
+];
+// Pose une icône puis un texte (le texte reste du texte, jamais du HTML)
+function setButtonContent(button, icon, text) {
+    const paths = {
+        pick: 'M12 8a4 4 0 1 0 0 8a4 4 0 1 0 0-8M12 2v4M12 18v4M2 12h4M18 12h4',
+        stop: 'M6 6l12 12M18 6L6 18',
+        copy: 'M9 9h11v11H9zM15 5H4v11',
+        deploy: 'M12 16V4M7 9l5-5 5 5M5 20h14'
+    };
+    button.innerHTML = `<svg viewBox="0 0 24 24"><path d="${paths[icon]}"></path></svg>`;
+    const label = document.createElement('span');
+    label.className = 'btn-label';
+    label.textContent = text;
+    button.append(label);
+}
+function showHelp() {
+    const dialog = document.getElementById('helpDialog');
+    const list = document.getElementById('helpList');
+    list.textContent = '';
+    HELP_ITEMS.forEach(item => {
+        if (typeof item === 'string') {
+            const title = document.createElement('h2');
+            title.textContent = item;
+            return list.append(title);
+        }
+        const [selector, text] = item;
+        const button = document.querySelector(selector);
+        if (!button) return;
+
+        // L'icône est recopiée du vrai bouton : elle reste toujours à jour
+        const icon = document.createElement('span');
+        icon.className = 'help-icon';
+        button.childNodes.forEach(node => icon.append(node.cloneNode(true)));
+        icon.querySelectorAll('[id]').forEach(node => node.removeAttribute('id'));
+
+        const row = document.createElement('div');
+        row.className = 'help-row';
+        row.append(icon, text);
+        list.append(row);
+    });
+    dialog.showModal();
+    dialog.scrollTop = 0;
+}
+document.getElementById('backupBtn').addEventListener('click', () => runCloudTask(backupProjects));
+document.getElementById('restoreBtn').addEventListener('click', () => runCloudTask(restoreProjects));
+document.getElementById('cloudKeyBtn').addEventListener('click', () => {
+    if (askCloudKey()) showMessage("🔑 Clé enregistrée dans ce navigateur.");
+});
+(function initAutoBackup() {
+    const button = document.getElementById('autoSaveBtn');
+    button.setAttribute('aria-pressed', String(localStorage.getItem('lb-auto-backup') === '1'));
+    button.addEventListener('click', () => {
+        const on = button.getAttribute('aria-pressed') !== 'true';
+        if (on && !localStorage.getItem('lb-cloud-key') && !askCloudKey()) return;
+        setAutoBackup(on);
+        showMessage(on ? "🔁 Sauvegarde auto : 30 s après chaque changement." : "🔁 Sauvegarde auto désactivée.");
+    });
+    setInterval(autoBackup, 2000);
+})();
+
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => console.log('Service Worker enregistré !'))
+        .catch(err => console.error('Erreur SW :', err));
+    });
+  }
+</script>
+<!-- mastercode:modules:start -->
+</body>
+</html>
