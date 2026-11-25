@@ -506,6 +506,64 @@ body.dark .code-editor { --c-kw: #c792ea; --c-str: #a5d6a7; --c-num: #ffb86c; --
 .card .pick-bar #pickBtn { flex: 1 0 auto; padding: 0 12px; }
 .card .pick-bar #copyPickBtn:not([hidden]) { flex: 100 1 0; }
 @media (max-width: 359px) { .card .pick-bar .dot-button svg { display: none; } }
+/* Une teinte douce par famille d'action ; les boutons neutres gardent le style de base */
+body { --t-bleu: #35648f; --t-vert: #34704c; --t-ambre: #80601f; --t-rouge: #98484a; --t-violet: #5d5095; --t-sarcelle: #22696d; }
+body.dark { --t-bleu: #8fb3d9; --t-vert: #93c4a4; --t-ambre: #d4ba87; --t-rouge: #d99c9c; --t-violet: #b3a8d8; --t-sarcelle: #88c2c4; }
+
+/* Bleu : copier, envoyer à l'IA */
+.card :is(#promptBtn, #copyCodeBtn, #sendCodeBtn, #copyIndexBtn, #copyConsoleBtn) { --tone: var(--t-bleu); }
+/* Vert : recevoir, ajouter, valider */
+.card :is(#firstCodeBtn, #pasteCodeBtn, #pasteApplyBtn, #applyBlocksBtn, #newProjectBtn) { --tone: var(--t-vert); }
+/* Ambre : revenir en arrière ou reprendre */
+.card :is(#undoBlocksBtn, #redoBlocksBtn, #historyBtn, #rollbackBtn) { --tone: var(--t-ambre); }
+/* Rouge : effacer, corriger une erreur */
+.card :is(#clearCodeBtn, #deleteProjectBtn, #fixErrorBtn) { --tone: var(--t-rouge); }
+/* Violet : en ligne */
+.card :is(#backupBtn, #restoreBtn, #cloudKeyBtn, #deployBtn) { --tone: var(--t-violet); }
+/* Sarcelle : tester, observer, désigner */
+.card :is(#runPreviewBtn, #analyzeBlocksBtn, #pickBtn) { --tone: var(--t-sarcelle); }
+
+.card :is(#promptBtn, #copyCodeBtn, #sendCodeBtn, #copyIndexBtn, #copyConsoleBtn,
+    #firstCodeBtn, #pasteCodeBtn, #pasteApplyBtn, #applyBlocksBtn, #newProjectBtn,
+    #undoBlocksBtn, #redoBlocksBtn, #historyBtn, #rollbackBtn,
+    #clearCodeBtn, #deleteProjectBtn, #fixErrorBtn,
+    #backupBtn, #restoreBtn, #cloudKeyBtn, #deployBtn,
+    #runPreviewBtn, #analyzeBlocksBtn, #pickBtn) {
+    color: var(--tone);
+    background: color-mix(in srgb, var(--tone) 11%, var(--btn-bg));
+    border-color: color-mix(in srgb, var(--tone) 32%, transparent);
+}
+
+/* Les deux actions principales et « Copier l'élément » : teinte un peu plus soutenue */
+.card #pasteApplyBtn, .card #deployBtn {
+    background: color-mix(in srgb, var(--tone) 24%, var(--btn-bg));
+    border-color: color-mix(in srgb, var(--tone) 60%, transparent);
+}
+.card .pick-bar #copyPickBtn:not([hidden]) {
+    color: var(--t-bleu);
+    background: color-mix(in srgb, var(--t-bleu) 24%, var(--btn-bg));
+    border-color: color-mix(in srgb, var(--t-bleu) 60%, transparent);
+}
+
+/* Réglages activés */
+.card .toggle-icon[aria-pressed="true"] svg { color: var(--t-vert); }
+.card .toggle-icon[aria-pressed="true"] {
+    background: color-mix(in srgb, var(--t-vert) 16%, var(--btn-bg));
+    border-color: color-mix(in srgb, var(--t-vert) 55%, transparent);
+}
+
+/* Token GitHub : la couleur posée par le code est adoucie */
+.card .token-paste-btn {
+    color: var(--t-rouge);
+    background: color-mix(in srgb, var(--t-rouge) 14%, var(--btn-bg)) !important;
+    border-color: color-mix(in srgb, var(--t-rouge) 40%, transparent);
+}
+.card .token-paste-btn.green {
+    color: var(--t-vert);
+    background: color-mix(in srgb, var(--t-vert) 18%, var(--btn-bg)) !important;
+    border-color: color-mix(in srgb, var(--t-vert) 55%, transparent);
+}
+.card .token-paste-btn svg { stroke: currentColor; }
     </style>
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#4b6cb7">
