@@ -1232,7 +1232,7 @@ try {
         domElements.previewArea.innerHTML = '';
         const iframe = document.createElement('iframe');
         // Sans allow-same-origin : l'application testée n'a pas accès à Reactor
-        iframe.sandbox = 'allow-scripts allow-popups allow-forms';
+        iframe.sandbox = 'allow-scripts allow-popups allow-forms allow-modals';
         iframe.style.width = '100%';
         iframe.style.height = '100%';
         iframe.style.border = 'none';
@@ -1591,7 +1591,8 @@ async function uploadFile(owner, repo, path, base64, token, msg) {
         });
     }
     function showMessage(msg) { if (domElements.statusDiv) { domElements.statusDiv.innerHTML = msg; domElements.statusDiv.classList.remove('error'); } }
-    function showError(msg) { if (domElements.statusDiv) { domElements.statusDiv.innerHTML = `❌ ${msg}`; domElements.statusDiv.classList.add('error'); } }
+    // textContent : les balises citées dans une erreur restent lisibles
+    function showError(msg) { if (domElements.statusDiv) { domElements.statusDiv.textContent = `❌ ${msg}`; domElements.statusDiv.classList.add('error'); } }
 
     if (domElements.deployBtn) {
         domElements.deployBtn.onclick = async () => {
@@ -1701,20 +1702,18 @@ async function uploadFile(owner, repo, path, base64, token, msg) {
 
     // --- Bouton Copier la console ---
     if (domElements.copyConsoleBtn) {
-        domElements.copyConsoleBtn.addEventListener('click', function() {
+        domElements.copyConsoleBtn.addEventListener('click', async function() {
             const statusText = domElements.statusDiv ? domElements.statusDiv.textContent : '';
             if (!statusText) {
                 showError("Rien à copier.");
                 return;
             }
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(statusText).then(() => {
-                    showMessage("✅ Contenu copié !");
-                }).catch(() => {
-                    fallbackCopy(statusText);
-                });
+            // Une erreur est copiée sous forme de message prêt pour l'IA
+            const feedback = buildStatusFeedback(statusText);
+            if (feedback) {
+                await copyTextToClipboard(feedback, "🐞 Message pour l'IA copié : colle-le.");
             } else {
-                fallbackCopy(statusText);
+                await copyTextToClipboard(statusText, "✅ Contenu copié !");
             }
         });
     }
@@ -2460,6 +2459,7 @@ const REACT_PROMPT = [
     "Il n'y a pas encore de code. Réponds simplement « Prêt », puis attends que je te décrive l'application."
 ].join('\n');
 async function copyTextToClipboard(text, message) {
+    if (text.startsWith('⚠️ LB REACTOR')) lastFeedback = text;
     if (navigator.clipboard && navigator.clipboard.writeText) {
         try {
             await navigator.clipboard.writeText(text);
@@ -2593,6 +2593,8 @@ let lastRuntimeError = '';
 let freshCode = '';
 // Évite d'appliquer deux fois la même réponse restée dans le presse-papiers
 let lastApplied = null;
+// Dernier message préparé pour l'IA
+let lastFeedback = '';
 function handlePreviewMessage(event) {
     const frame = domElements.previewArea.querySelector('iframe');
     if (!frame || event.source !== frame.contentWindow) return;
@@ -2621,6 +2623,23 @@ function buildErrorFeedback(source, message) {
         if (names.length) hint = `\nBlocs qui utilisent « ${word} » : ${names.join(', ')}`;
     }
     return `⚠️ LB REACTOR : l'application plante à l'exécution.\nErreur : ${message}${hint}\nCorrige avec la plus petite retouche possible, en respectant le protocole.`;
+}
+// Transforme l'erreur affichée en message pour l'IA (vide : rien à lui envoyer)
+function buildStatusFeedback(status) {
+    if (lastRuntimeError && status.includes(lastRuntimeError)) {
+        return buildErrorFeedback(domElements.reactCode.value, lastRuntimeError);
+    }
+    const compile = status.match(/^❌ (?:Échec|Erreur export) : ([\s\S]+)/);
+    if (compile) {
+        return `⚠️ LB REACTOR : le code ne compile pas.\nErreur : ${compile[1]}\nCorrige avec la plus petite retouche possible, en respectant le protocole.`;
+    }
+    if (status.startsWith('❌ Réponse refusée')) {
+        const reason = document.getElementById('blocksReport').textContent;
+        return `⚠️ LB REACTOR : ta dernière réponse a été refusée, rien n'a été appliqué.\n${reason}\nRenvoie les blocs corrigés en respectant le protocole.`;
+    }
+    // Message déjà préparé par Reactor : on le recopie au lieu du texte affiché
+    if (/^(❌ Refusé|↩️ Annulé|🐞)/.test(status)) return lastFeedback;
+    return '';
 }
 window.addEventListener('message', handlePreviewMessage);
 document.getElementById('fixErrorBtn').addEventListener('click', async () => {
