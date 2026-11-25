@@ -368,10 +368,11 @@ body.dark .code-editor { --c-kw: #c792ea; --c-str: #a5d6a7; --c-num: #ffb86c; --
             opacity: 1;
         }
 .react-blocks { display: flex; flex-direction: column; gap: 0.75rem; }
+/* Champ de secours : invisible tant que le presse-papiers répond */
 #aiResponse { min-height: 100px; }
+#aiResponse[hidden] { display: none; }
 .react-blocks-actions { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
 .react-blocks pre { white-space: pre-wrap; font-size: 0.8rem; max-height: 220px; overflow: auto; }
-#applyBlocksBtn:disabled { opacity: 0.4; cursor: default; }
 .ai-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
 .ai-bar.main-bar { grid-template-columns: repeat(4, 1fr); gap: 0.4rem; }
 .main-bar .square-btn svg { width: 26px; height: 26px; }
@@ -594,8 +595,8 @@ body.dark { --t-bleu: #8fb3d9; --t-vert: #93c4a4; --t-ambre: #d4ba87; --t-rouge:
 .is-loaded .bullet .bullet-tip { fill: url(#bulletCopper); stroke: #5c240c; stroke-width: 0.8; }
 .is-loaded .bullet .bullet-case { fill: url(#bulletBrass); stroke: #5e430c; stroke-width: 0.8; }
 .is-loaded .bullet .bullet-shine { display: inline; fill: none; stroke: rgba(255,255,255,0.65); stroke-width: 0.9; }
-/* Options avancées : trois boutons depuis le retrait de « Mon code » */
-.card #advancedPanel .ai-bar { grid-template-columns: repeat(3, 1fr); }
+/* Options avancées : un seul bouton, sur toute la largeur */
+.card #advancedPanel .ai-bar { grid-template-columns: 1fr; }
     </style>
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#4b6cb7">
@@ -690,6 +691,7 @@ body.dark { --t-bleu: #8fb3d9; --t-vert: #93c4a4; --t-ambre: #d4ba87; --t-rouge:
         </button>
     </div>
     <pre id="blocksReport"></pre>
+    <textarea id="aiResponse" spellcheck="false" placeholder="Colle ici la réponse de l'IA" hidden></textarea>
     <details id="advancedPanel">
         <summary title="Plus d'outils" aria-label="Plus d'outils">⋯</summary>
         <div class="react-blocks">
@@ -698,16 +700,7 @@ body.dark { --t-bleu: #8fb3d9; --t-vert: #93c4a4; --t-ambre: #d4ba87; --t-rouge:
                     <svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"></path></svg>
                     <span>Index</span>
                 </button>
-                <button id="analyzeBlocksBtn" class="square-btn ai-btn" title="Analyser la réponse sans l'appliquer">
-                    <svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6"></circle><path d="M15 15l6 6"></path></svg>
-                    <span>Analyser</span>
-                </button>
-                <button id="applyBlocksBtn" class="square-btn ai-btn" title="Valider la réponse analysée" disabled>
-                    <svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"></path></svg>
-                    <span>Valider</span>
-                </button>
             </div>
-            <textarea id="aiResponse" spellcheck="false" placeholder="Collage manuel de la réponse"></textarea>
             <details id="reactIndexPanel">
                 <summary>Blocs</summary>
                 <pre id="reactIndex" class="result"></pre>
@@ -2415,7 +2408,6 @@ async function copyReactIndex() {
 let pendingReactUpdate = null;
 function resetReactUpdate() {
     pendingReactUpdate = null;
-    document.getElementById('applyBlocksBtn').disabled = true;
     document.getElementById('blocksReport').textContent = '';
 }
 async function analyzeAiResponse() {
@@ -2435,7 +2427,6 @@ async function analyzeAiResponse() {
             ...update.removed.map(n => `🗑️ Supprimé : ${n}`)
         ];
         report.textContent = lines.join('\n');
-        document.getElementById('applyBlocksBtn').disabled = false;
         showMessage("✅ Réponse valide, prête à appliquer.");
     } catch (err) {
         report.textContent = `❌ ${err.message}`;
@@ -2538,12 +2529,14 @@ async function pasteAndApply() {
         try {
             field.value = await readClipboardText();
         } catch (err) {
-            document.getElementById('advancedPanel').open = true;
-            return showError("Colle la réponse dans le champ des options avancées, puis touche à nouveau « Coller et appliquer ».");
+            field.hidden = false;
+            field.focus();
+            return showError("Presse-papiers bloqué : colle la réponse dans le champ affiché, puis touche à nouveau « Coller et appliquer ».");
         }
     }
 
     const answer = field.value.trim();
+    field.hidden = true;
     if (answer.startsWith('⚙️ PROTOCOLE') || answer.startsWith('⚠️ LB REACTOR')) {
         field.value = '';
         return showError("C'est le message de Reactor qui est copié : copie d'abord la réponse de l'IA.");
@@ -2692,10 +2685,14 @@ async function installFirstCode() {
         try {
             answer = (await readClipboardText()).trim();
         } catch (err) {
-            document.getElementById('advancedPanel').open = true;
-            return showError("Colle la réponse dans le champ des options avancées, puis touche à nouveau « Premier code ».");
+            field.hidden = false;
+            field.focus();
+            return showError("Presse-papiers bloqué : colle la réponse dans le champ affiché, puis touche à nouveau « Premier code ».");
         }
     }
+    // Le champ de secours est lu : il se vide et disparaît
+    field.value = '';
+    field.hidden = true;
     if (answer.startsWith('⚙️ PROTOCOLE') || answer.startsWith('⚠️ LB REACTOR')) {
         return showError("C'est le message de Reactor qui est copié : copie d'abord la réponse de l'IA.");
     }
@@ -2887,8 +2884,6 @@ document.getElementById('firstCodeBtn').addEventListener('click', installFirstCo
 document.getElementById('pasteApplyBtn').addEventListener('click', pasteAndApply);
 document.getElementById('undoBlocksBtn').addEventListener('click', undoLastApply);
 document.getElementById('copyIndexBtn').addEventListener('click', copyReactIndex);
-document.getElementById('analyzeBlocksBtn').addEventListener('click', analyzeAiResponse);
-document.getElementById('applyBlocksBtn').addEventListener('click', applyAiResponse);
 document.getElementById('aiResponse').addEventListener('input', resetReactUpdate);
 document.getElementById('redoBlocksBtn').addEventListener('click', redoLastUndo);
 // La barre des 5 boutons (avec son compte rendu et ⋯) se place sous le code
