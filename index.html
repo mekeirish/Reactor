@@ -1100,10 +1100,20 @@ return new Promise((resolve, reject) => {
 
         const safeCompiled = compiledCode.replace(/<\/script>/gi, '<\\/script>');
         
+        // Signature dans sa propre bande, après l'application : elle ne recouvre rien
         const signatureHtml = showSignature ? `
-        <footer style="position:absolute; bottom:10px; left:0; width:100%; display:flex; justify-content:center; pointer-events:none; z-index:9999;">
-            <img src="https://i.ibb.co/HfZCBFqK/slb.png" alt="slb" style="width:64px; opacity:0.8;">
-        </footer>` : '';
+    <style>
+        body { display: flex; flex-direction: column; }
+        #root { flex: 1 0 auto; min-height: 0; }
+        #lb-signature { flex: none; display: flex; align-items: center; justify-content: center; gap: 14px; padding: 18px 24px 22px; background: #030712; }
+        #lb-signature::before, #lb-signature::after { content: ''; flex: 1; max-width: 96px; height: 1px; }
+        #lb-signature::before { background: linear-gradient(to right, transparent, rgba(148, 163, 184, 0.45)); }
+        #lb-signature::after { background: linear-gradient(to left, transparent, rgba(148, 163, 184, 0.45)); }
+        #lb-signature img { display: block; width: 72px; height: auto; }
+    </style>
+    <footer id="lb-signature">
+        <img src="https://i.ibb.co/HfZCBFqK/slb.png" alt="Signature slb" decoding="async">
+    </footer>` : '';
         // Titre de la page publiée : le nom du projet ouvert, sans caractères HTML
         const pageTitle = document.getElementById('projectName').textContent.replace(/[<>&]/g, ' ').trim() || 'Application';
 
