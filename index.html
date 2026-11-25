@@ -1585,6 +1585,11 @@ async function uploadFile(owner, repo, path, base64, token, msg) {
         }
     }
 }
+// README vide à la première publication ; un README déjà là n'est jamais écrasé
+async function createReadmeIfMissing(owner, repo, token) {
+    if (await getFileSha(owner, repo, 'README.md', token)) return;
+    await uploadFile(owner, repo, 'README.md', '', token, 'Add README');
+}
     async function enablePages(owner, repo, token) {
         const url = `https://api.github.com/repos/${owner}/${repo}/pages`;
         for (const branch of ['main', 'master']) {
@@ -1693,6 +1698,7 @@ async function uploadFile(owner, repo, path, base64, token, msg) {
                 updateChecklist('uploadSw','pending');
                 await uploadFile(owner, repo, "sw.js", strToBase64(finalSw), token, "Add sw");
                 updateChecklist('uploadSw','success');
+                await createReadmeIfMissing(owner, repo, token);
                 updateChecklist('uploadIcons','pending');
                 for (let [size, { blob, filename }] of iconsMap.entries()) {
                     const b64 = await blobToBase64(blob);
