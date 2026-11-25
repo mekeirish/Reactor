@@ -594,6 +594,8 @@ body.dark { --t-bleu: #8fb3d9; --t-vert: #93c4a4; --t-ambre: #d4ba87; --t-rouge:
 .is-loaded .bullet .bullet-tip { fill: url(#bulletCopper); stroke: #5c240c; stroke-width: 0.8; }
 .is-loaded .bullet .bullet-case { fill: url(#bulletBrass); stroke: #5e430c; stroke-width: 0.8; }
 .is-loaded .bullet .bullet-shine { display: inline; fill: none; stroke: rgba(255,255,255,0.65); stroke-width: 0.9; }
+/* Options avancées : trois boutons depuis le retrait de « Mon code » */
+.card #advancedPanel .ai-bar { grid-template-columns: repeat(3, 1fr); }
     </style>
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#4b6cb7">
@@ -692,10 +694,6 @@ body.dark { --t-bleu: #8fb3d9; --t-vert: #93c4a4; --t-ambre: #d4ba87; --t-rouge:
         <summary title="Plus d'outils" aria-label="Plus d'outils">⋯</summary>
         <div class="react-blocks">
             <div class="ai-bar">
-                <button id="sendCodeBtn" class="square-btn ai-btn" title="Envoyer mon code à l'IA">
-                    <svg viewBox="0 0 24 24"><path d="M3 11l18-8-8 18-2-8z"></path></svg>
-                    <span>Mon code</span>
-                </button>
                 <button id="copyIndexBtn" class="square-btn ai-btn" title="Copier l'index des blocs">
                     <svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"></path></svg>
                     <span>Index</span>
@@ -2886,7 +2884,6 @@ document.getElementById('reactIndexPanel').addEventListener('toggle', (e) => {
     if (e.target.open) refreshReactIndex();
 });
 document.getElementById('firstCodeBtn').addEventListener('click', installFirstCode);
-document.getElementById('sendCodeBtn').addEventListener('click', sendCurrentCode);
 document.getElementById('pasteApplyBtn').addEventListener('click', pasteAndApply);
 document.getElementById('undoBlocksBtn').addEventListener('click', undoLastApply);
 document.getElementById('copyIndexBtn').addEventListener('click', copyReactIndex);
@@ -3727,7 +3724,7 @@ async function restoreProjects() {
     if (activeReplaced) await showProject();
     else renderProjects();
     const note = kept ? ` ${kept} gardé(s) tel(s) quel(s) : ouvre-le puis restaure pour le remplacer.` : '';
-    const ai = activeReplaced ? " Pour l'IA : ⋯ puis « Mon code »." : '';
+    const ai = activeReplaced ? " Pour l'IA : touche le découpeur ✂️." : '';
     showMessage(`✅ ${restored} projet(s) restauré(s).${note}${ai}`);
 }
 async function runCloudTask(task) {
