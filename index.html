@@ -597,6 +597,15 @@ body.dark { --t-bleu: #8fb3d9; --t-vert: #93c4a4; --t-ambre: #d4ba87; --t-rouge:
 .is-loaded .bullet .bullet-shine { display: inline; fill: none; stroke: rgba(255,255,255,0.65); stroke-width: 0.9; }
 /* Options avancées : un seul bouton, sur toute la largeur */
 .card #advancedPanel .ai-bar { grid-template-columns: 1fr; }
+/* Outils du code, peu utilisés : petits ronds ; taille à gauche, actions à droite */
+.card .code-tools { display: flex; align-items: center; gap: 10px; }
+.card .code-tools .dot-button, .card .code-tools .code-font {
+    flex: none; width: 40px; height: 40px; padding: 0; gap: 0;
+    border-radius: 50%; font-size: 0;
+}
+.card .code-tools .code-font { font-size: 0.85rem; }
+.card .code-tools .dot-button svg { width: 18px; height: 18px; }
+.card .code-tools #clearCodeBtn { margin-left: auto; }
     </style>
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#4b6cb7">
